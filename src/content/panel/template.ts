@@ -626,13 +626,6 @@ export function panelTemplate(version: string): string {
             <option value="dark">${PANEL_TEXT.themeDark}</option>
           </select>
         </label>
-        <label id="saveTokenOption" class="check">
-          <input id="saveTokenCheckbox" type="checkbox" />
-          <span>
-            ${PANEL_TEXT.saveTokenSetting}
-            <span class="setting-hint">${PANEL_TEXT.saveTokenSettingHint}</span>
-          </span>
-        </label>
       </section>
 
       <p id="result" class="result" aria-live="polite"></p>

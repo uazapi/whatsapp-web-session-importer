@@ -67,8 +67,6 @@ export const EXTENSION_CUSTOMIZATION = {
     themeFollowWhatsApp: "Seguir WhatsApp",
     themeLight: "Claro",
     themeDark: "Escuro",
-    saveTokenSetting: "Salvar token neste navegador",
-    saveTokenSettingHint: "Desative para preencher o token manualmente a cada importação.",
     includeHistory: "Incluir histórico de mensagens (beta)",
     disconnectLocal: "Apagar a sessão local após importar",
     cleanupNoticeHTML: "<strong>Atenção:</strong> esta sessão será migrada para a assinatura informada e desconectada deste navegador.",

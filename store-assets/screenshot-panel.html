@@ -1,0 +1,335 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        background: #efeae2;
+        color: #111b21;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .screen {
+        width: 1280px;
+        height: 800px;
+        display: grid;
+        grid-template-columns: 390px 1fr;
+        background:
+          linear-gradient(90deg, #ffffff 0 390px, transparent 390px),
+          radial-gradient(circle at 88% 8%, rgba(29, 170, 97, 0.2), transparent 30%),
+          #efeae2;
+      }
+
+      .sidebar {
+        border-right: 1px solid #d9dbdf;
+        background: #ffffff;
+        padding: 28px 24px;
+      }
+
+      .search {
+        height: 42px;
+        border-radius: 8px;
+        background: #f0f2f5;
+        margin-bottom: 26px;
+      }
+
+      .chat {
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f2f5;
+      }
+
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #d9fdd3;
+      }
+
+      .line {
+        height: 10px;
+        border-radius: 999px;
+        background: #d4d7db;
+        margin: 7px 0;
+      }
+
+      .line.short {
+        width: 56%;
+      }
+
+      .chat:nth-child(3) .avatar,
+      .chat:nth-child(6) .avatar {
+        background: #e7fce3;
+      }
+
+      .main {
+        position: relative;
+        padding: 46px 56px;
+      }
+
+      .hero {
+        max-width: 610px;
+        padding-top: 70px;
+      }
+
+      .eyebrow {
+        color: #1b8755;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0;
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 1.08;
+        margin: 0 0 18px;
+        max-width: 390px;
+      }
+
+      .copy {
+        color: #4a5c66;
+        font-size: 18px;
+        line-height: 1.45;
+        max-width: 420px;
+      }
+
+      .panel {
+        position: absolute;
+        right: 60px;
+        top: 62px;
+        width: 368px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 20px 52px rgba(11, 20, 26, 0.28), 0 0 24px rgba(29, 170, 97, 0.2);
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 36px 1fr 32px;
+        gap: 10px;
+        align-items: center;
+        min-height: 68px;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: #f7f5f3;
+      }
+
+      .mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: #1daa61;
+      }
+
+      .mark svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      .title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .subtitle {
+        color: rgba(0, 0, 0, 0.6);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .gear {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+        color: #6b7c85;
+        font-size: 20px;
+      }
+
+      .form {
+        display: grid;
+        gap: 14px;
+        padding: 16px 18px 18px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .input {
+        height: 40px;
+        border-radius: 8px;
+        background: #f0f2f5;
+        color: #40515a;
+        font-size: 14px;
+        font-weight: 400;
+        padding: 10px 12px;
+      }
+
+      .token {
+        display: grid;
+        grid-template-columns: 1fr 34px 34px;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .check {
+        display: grid;
+        grid-template-columns: 16px 1fr;
+        gap: 9px;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .box {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        background: #1daa61;
+        position: relative;
+      }
+
+      .box::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 2px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .button {
+        height: 42px;
+        border-radius: 6px;
+        background: #1daa61;
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .notice {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background: #f7f5f3;
+        color: rgba(0, 0, 0, 0.62);
+        font-size: 12px;
+        line-height: 1.45;
+        padding: 9px 11px;
+      }
+
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        color: rgba(0, 0, 0, 0.6);
+        font-size: 12px;
+        padding: 10px 18px;
+      }
+
+      .callout {
+        position: absolute;
+        left: 56px;
+        bottom: 78px;
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 14px;
+        align-items: center;
+        width: 520px;
+        padding: 18px 20px;
+        border-left: 5px solid #1daa61;
+        background: rgba(255, 255, 255, 0.86);
+      }
+
+      .callout strong {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+
+      .callout span {
+        color: #4a5c66;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <aside class="sidebar">
+        <div class="search"></div>
+        <div class="chat"><div class="avatar"></div><div><div class="line"></div><div class="line short"></div></div></div>
+        <div class="chat"><div class="avatar"></div><div><div class="line"></div><div class="line short"></div></div></div>
+        <div class="chat"><div class="avatar"></div><div><div class="line"></div><div class="line short"></div></div></div>
+        <div class="chat"><div class="avatar"></div><div><div class="line"></div><div class="line short"></div></div></div>
+        <div class="chat"><div class="avatar"></div><div><div class="line"></div><div class="line short"></div></div></div>
+      </aside>
+      <main class="main">
+        <section class="hero">
+          <div class="eyebrow">WhatsApp Session Connector</div>
+          <h1>Migre sessões do WhatsApp Web para a Uazapi</h1>
+          <p class="copy">A extensão captura a sessão local, envia os dados em partes para a API e limpa o navegador após a migração.</p>
+        </section>
+        <section class="panel">
+          <div class="topbar">
+            <div class="mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v10" />
+                <path d="m8 10 4 4 4-4" />
+                <path d="M6 18h12" />
+              </svg>
+            </div>
+            <div>
+              <div class="title">Migrar sessão</div>
+              <div class="subtitle">WhatsApp Web conectado</div>
+            </div>
+            <div class="gear">⚙</div>
+          </div>
+          <div class="form">
+            <label>Nome da assinatura <div class="input">minha-loja</div></label>
+            <label>Token <div class="input token"><span>••••••••••••••••••••</span><span>🗑</span><span>👁</span></div></label>
+            <div class="check"><div class="box"></div><span>Incluir histórico de mensagens (beta)</span></div>
+            <div class="button">Migrar sessão</div>
+            <div class="notice"><strong>Atenção:</strong> esta sessão será migrada para a assinatura informada e desconectada deste navegador.</div>
+          </div>
+          <div class="meta"><span>Modo padrão</span><span>Versão v0.2.1</span></div>
+        </section>
+        <div class="callout">
+          <div class="mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v10" />
+              <path d="m8 10 4 4 4-4" />
+              <path d="M6 18h12" />
+            </svg>
+          </div>
+          <div><strong>Fluxo guiado dentro do WhatsApp Web</strong><span>Validação da instância, envio em chunks e limpeza local após a importação.</span></div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

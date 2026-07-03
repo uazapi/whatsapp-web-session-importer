@@ -382,6 +382,271 @@ Esse fluxo é bom para:
 - botão no painel Uazapi;
 - fallback quando a bridge não está disponível.
 
+## Formas recomendadas para um SaaS incorporar
+
+A opção mais simples é usar a extensão do jeito que ela já está: o SaaS gera uma URL com `client` e `token`, abre o WhatsApp Web e a extensão faz o resto. A própria extensão remove `client` e `token` da barra de endereço depois de ler.
+
+`PING`, bridge, `importKey`, gateway no SaaS do cliente e remoção dos campos da UI são camadas extras. Elas podem melhorar experiência, controle ou segurança, mas não são necessárias para integrar a versão de referência com o backend Uazapi.
+
+Existem quatro níveis práticos de incorporação. A escolha depende de quem pode ver o token, se o SaaS roda em domínio permitido pela extensão e quanto o cliente quer customizar.
+
+Resumo de decisão:
+
+```text
+Quer o menor esforço, sem fork?
+-> Gere o link web.whatsapp.com#client=...&token=...
+
+Quer detectar a extensão e abrir com um botão?
+-> Use PING + START_IMPORT com client/token.
+
+SaaS está em domínio próprio?
+-> Adicione o domínio em appBridge.matches e manifest.json, ou use link direto como fallback.
+
+Cliente não quer token/campos no navegador?
+-> Faça fork com importKey e gateway no backend/SaaS do cliente.
+```
+
+### Opção 1: extensão atual + backend Uazapi direto
+
+Essa é a melhor opção para começar, porque não exige fork da extensão nem gateway no SaaS do cliente.
+
+Use quando:
+
+- o SaaS consegue obter `client` e `token` no backend dele ou no nosso painel;
+- o token pode ser entregue para a extensão no navegador do operador;
+- o cliente aceita o fluxo atual com painel de confirmação.
+
+Fluxo mínimo:
+
+1. SaaS gera `https://web.whatsapp.com/#client=CLIENTE&token=TOKEN`.
+2. Usuário abre o link.
+3. Extensão lê o hash, remove `client` e `token` da barra de endereço e abre o painel.
+4. Extensão captura a sessão e chama o backend Uazapi diretamente.
+
+Fluxo com melhor UX:
+
+1. SaaS chama `PING` para detectar a extensão.
+2. SaaS busca `client` e `token` no backend.
+3. SaaS envia `START_IMPORT { client, token }` via bridge.
+4. Extensão abre `https://web.whatsapp.com/#client=...&token=...`.
+5. Extensão remove o hash, captura a sessão e chama o backend Uazapi diretamente.
+
+Vantagens:
+
+- usa o código atual;
+- usa nosso backend diretamente;
+- não exige gateway no SaaS do cliente;
+- com bridge, permite detectar extensão instalada e abrir WhatsApp Web com um botão.
+
+Limites:
+
+- o token chega ao navegador do operador;
+- o hash aparece na barra por alguns instantes até a extensão remover;
+- sem bridge, o SaaS não sabe se a extensão está instalada;
+- em domínio próprio, a bridge precisa ser permitida no `manifest.json`.
+
+### Opção 2: bridge como melhoria de experiência
+
+Use a bridge quando o SaaS quiser detectar se a extensão está instalada e abrir o WhatsApp Web com um botão. Ela não muda o contrato com o backend Uazapi: a extensão ainda recebe `client` e `token`, captura a sessão e chama a Uazapi diretamente.
+
+Se a bridge não responder, use o link direto como fallback:
+
+```text
+https://web.whatsapp.com/#client=CLIENTE&token=TOKEN
+```
+
+Esse fallback deve continuar existindo mesmo quando a bridge é usada, porque cobre:
+
+- extensão instalada depois que a página do SaaS abriu;
+- navegador bloqueando bridge;
+- domínio do SaaS ainda não incluído no manifest;
+- atendimento manual pelo suporte.
+
+### Opção 3: bridge em domínio próprio
+
+Se o SaaS do cliente não roda em `*.uazapi.com`, a bridge só funciona se o domínio for explicitamente permitido.
+
+Atualize:
+
+- `src/customization.ts`, em `appBridge.matches`;
+- `manifest.json`, em `host_permissions`;
+- `manifest.json`, em `content_scripts[].matches` para o `app-bridge.js`.
+
+Depois rode `npm run build`.
+
+Essa opção não muda o contrato com a Uazapi. Ela só permite que o SaaS do cliente use `PING` e `START_IMPORT` em vez de depender apenas de link direto.
+
+### Opção 4: importKey + gateway do cliente
+
+Use quando o cliente quer remover campos de `client`/`token`, não quer token no navegador ou quer controlar expiração, auditoria e autorização no próprio SaaS.
+
+Nesse fluxo, a extensão não chama a Uazapi diretamente. Ela chama o backend/SaaS do cliente com `importKey` e dados capturados. O backend/SaaS do cliente resolve `importKey -> subdomain/token` e faz a ponte para o backend Uazapi.
+
+Essa é a melhor opção para uma experiência white-label mais fechada, mas exige fork da extensão e endpoints no backend/SaaS do cliente.
+
+Não confunda com a versão de referência: hoje a extensão oficial ainda usa `client + token` e chama o backend Uazapi diretamente.
+
+### Fluxo recomendado com uma variável única
+
+Quando o cliente quiser remover os campos de `client` e `token` da extensão, o desenho recomendado é fazer a extensão conversar com o backend/SaaS do cliente, não diretamente com o backend Uazapi.
+
+Contrato em uma frase:
+
+```text
+Extensão -> backend/SaaS do cliente: importKey + dados capturados do WhatsApp Web
+Backend/SaaS do cliente -> backend Uazapi: subdomain + token + dados da importação
+```
+
+Nesse modelo, a URL do WhatsApp Web tem só uma variável:
+
+```text
+https://web.whatsapp.com/#importKey=HASH
+```
+
+O `HASH` pode ser um SHA-256 de uma composição canônica de `subdomain` e `token`, gerado pelo SaaS do cliente.
+
+Exemplo simples:
+
+```js
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+const importKey = await sha256Hex(`${subdomain}:${token}`);
+const url = `https://web.whatsapp.com/#importKey=${encodeURIComponent(importKey)}`;
+```
+
+Use uma composição sem ambiguidade. `subdomain + token` puro pode colidir entre pares diferentes de valores, por exemplo `ab` + `c` e `a` + `bc`. Um separador fixo, JSON canônico ou HMAC evita esse tipo de ambiguidade.
+
+Responsabilidades nesse desenho:
+
+- A extensão lê `importKey`, remove o hash da barra de endereço, captura a sessão do WhatsApp Web e envia os dados para o backend/SaaS do cliente.
+- O backend/SaaS do cliente resolve `importKey -> subdomain/token/instância`, autoriza a ação e faz a ponte para o backend Uazapi.
+- O backend Uazapi continua recebendo a importação pelo contrato normal, com `subdomain` e token resolvidos pelo backend/SaaS do cliente.
+
+Ponto importante: SHA-256 é irreversível. Se a extensão recebe só `importKey`, ela não consegue descobrir `subdomain` nem `token`. Por isso, esse lookup precisa existir no backend/SaaS do cliente. Não basta mudar só a URL da extensão.
+
+Fluxo operacional:
+
+1. O SaaS do cliente conhece `subdomain` e `token`.
+2. O SaaS do cliente gera `importKey` e cria o link `https://web.whatsapp.com/#importKey=...`.
+3. A extensão lê `importKey` e remove o hash da URL.
+4. A extensão captura a sessão e monta os mesmos chunks de importação.
+5. A extensão envia `importKey` + metadados/chunks/histórico para o backend/SaaS do cliente.
+6. O backend/SaaS do cliente valida `importKey`, resolve `subdomain` e `token`, e encaminha os dados para a Uazapi.
+7. O backend/SaaS do cliente devolve para a extensão o status de progresso ou erro.
+
+Contrato sugerido para o backend/SaaS do cliente:
+
+```text
+POST /uazapi/import-web-session/start
+body: { importKey, device, expected }
+
+POST /uazapi/import-web-session/chunk
+body: { importKey, jobId, section, seq, count, sha256, payload }
+
+POST /uazapi/import-web-session/finish
+body: { importKey, jobId }
+
+POST /uazapi/import-web-session/history
+body: { importKey, ...payloadDeHistorico }
+```
+
+Esses endpoints podem ter outros nomes. O ponto essencial é que toda chamada da extensão para o backend/SaaS do cliente carregue `importKey`, e nenhuma chamada da extensão precise carregar `token`.
+
+Como o backend/SaaS do cliente chama a Uazapi:
+
+1. Resolve `importKey` para `{ subdomain, token }`.
+2. Monta a base URL da instância, por exemplo `https://SUBDOMAIN.uazapi.com`.
+3. Chama os endpoints da Uazapi usando o token da instância no header `token`.
+4. Retorna para a extensão apenas `jobId`, progresso, sucesso ou erro. O token nunca volta para a extensão.
+
+Chamadas da ponte para a Uazapi:
+
+```text
+GET https://SUBDOMAIN.uazapi.com/instance/status
+headers:
+  Accept: application/json
+  token: TOKEN_DA_INSTANCIA
+```
+
+Use essa chamada para validar que a instância está desconectada ou em importação antes de aceitar o envio da sessão.
+
+```text
+POST https://SUBDOMAIN.uazapi.com/instance/import-web-session/start
+headers:
+  Accept: application/json
+  Content-Type: application/json
+  token: TOKEN_DA_INSTANCIA
+body:
+  { device, expected }
+```
+
+A Uazapi retorna `jobId`. O backend/SaaS do cliente pode devolver esse mesmo `jobId` para a extensão ou criar um `jobId` próprio e guardar o vínculo com o `jobId` da Uazapi.
+
+```text
+POST https://SUBDOMAIN.uazapi.com/instance/import-web-session/chunk
+headers:
+  Accept: application/json
+  Content-Type: application/json
+  token: TOKEN_DA_INSTANCIA
+body:
+  { jobId, section, seq, count, sha256, payload }
+```
+
+Se o backend/SaaS do cliente criou um `jobId` próprio, ele deve trocar pelo `jobId` da Uazapi antes de encaminhar o chunk.
+
+```text
+POST https://SUBDOMAIN.uazapi.com/instance/import-web-session/finish
+headers:
+  Accept: application/json
+  Content-Type: application/json
+  token: TOKEN_DA_INSTANCIA
+body:
+  { jobId }
+```
+
+```text
+POST https://SUBDOMAIN.uazapi.com/instance/import-web-session/history
+headers:
+  Accept: application/json
+  Content-Type: application/json
+  token: TOKEN_DA_INSTANCIA
+body:
+  { contacts, history }
+```
+
+Regras práticas para a ponte do cliente:
+
+- valide `importKey` em todas as chamadas, não só no `start`;
+- aplique expiração e limite de uso no `importKey`;
+- não aceite `subdomain` ou `token` enviados pela extensão nesse fluxo;
+- preserve `section`, `seq`, `count`, `sha256` e `payload` sem reformatar o conteúdo do chunk;
+- normalize erros da Uazapi para mensagens curtas que a extensão possa mostrar no painel;
+- depois do `finish`, invalide ou marque o `importKey` como usado se ele for de uso único.
+
+Esse é o melhor desenho para variável única porque:
+
+- remove `client` e `token` da UI da extensão;
+- evita token na URL e no armazenamento do navegador;
+- mantém a regra do hash dentro do ambiente do cliente;
+- deixa o backend Uazapi com contrato estável;
+- permite que o cliente implemente expiração, auditoria, limite de uso e permissões no próprio SaaS.
+
+Para implementar esse fork na extensão, os pontos principais são:
+
+- `src/shared/config.ts`: adicionar o parâmetro de URL, por exemplo `importKey`;
+- `src/shared/url.ts`: ler e remover `importKey` do hash;
+- `src/content/app-bridge.ts` e `src/background/index.ts`: aceitar `importKey` no `START_IMPORT`/`OPEN_WHATSAPP`;
+- `src/background/api.ts`: trocar chamadas diretas para `https://SUBDOMAIN.uazapi.com` por chamadas ao backend/SaaS do cliente usando `importKey`;
+- `src/content/panel/template.ts` e `src/content/index.ts`: remover os campos de `client`/`token` se o fluxo for exclusivamente por URL.
+
+Para produção, prefira uma chave opaca de uso único ou um HMAC com segredo do servidor e expiração curta. Um SHA-256 determinístico de `subdomain` + `token` simplifica a URL, mas continua sendo reutilizável enquanto o backend/SaaS do cliente aceitar aquele valor.
+
 ## Integração por bridge no SaaS
 
 A bridge permite que uma página do SaaS descubra se a extensão está instalada e abra o WhatsApp Web com um clique.
@@ -480,9 +745,9 @@ function pingWhatsAppSessionConnector(timeoutMs = 1500) {
 }
 ```
 
-### Abrir WhatsApp Web com um clique
+### Abrir WhatsApp Web com um clique usando client/token
 
-Depois de buscar `client` e `token` no seu backend/SaaS, envie `START_IMPORT`.
+No fluxo atual, depois de buscar `client` e `token` no backend/SaaS, envie `START_IMPORT`.
 
 ```js
 async function startImportWithOneClick({ client, token }) {
@@ -526,7 +791,7 @@ window.addEventListener("message", (event) => {
 
 `OPEN_WHATSAPP` também é aceito como alias de `START_IMPORT`.
 
-## Fluxo sugerido no SaaS
+## Fluxo sugerido no SaaS com backend Uazapi direto
 
 1. Usuário abre a tela da instância.
 2. SaaS chama `PING`.
@@ -540,6 +805,8 @@ window.addEventListener("message", (event) => {
 10. Usuário confere os dados e clica em **Migrar sessão**.
 
 Esse desenho mantém o clique no SaaS simples sem dar ao SaaS acesso direto ao armazenamento interno do WhatsApp Web.
+
+Se o SaaS quiser esconder `client` e `token` da extensão, use o modelo `importKey + gateway do cliente` descrito acima. Nesse caso, o fluxo da bridge também precisa ser adaptado para enviar `START_IMPORT { importKey }` em vez de `START_IMPORT { client, token }`.
 
 ## O que pode ser mudado em forks
 
@@ -566,9 +833,9 @@ Pontos que exigem mais cuidado:
 
 ## O que não fazemos nesta versão
 
-Esta versão não usa URL assinada, job temporário nem token de uso único.
+Esta versão de referência não implementa URL assinada, job temporário, token de uso único nem `importKey` de variável única.
 
-O contrato atual continua sendo o token da instância. Se quiser trocar para um fluxo com job assinado, o melhor ponto de adaptação é `src/background/api.ts`, mantendo a UI e a captura do WhatsApp Web iguais.
+O contrato atual continua sendo `client` + token da instância. Se quiser trocar para um fluxo com job assinado ou variável única, o melhor ponto de adaptação é `src/background/api.ts`, mantendo a captura do WhatsApp Web igual.
 
 Também não tentamos exportar histórico completo do WhatsApp Web. A extensão envia âncoras para que o backend use APIs mais confiáveis da biblioteca WhatsApp.
 
