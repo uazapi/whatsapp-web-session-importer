@@ -161,7 +161,6 @@ Você pode configurar:
 
 - abrir o painel automaticamente;
 - usar tema claro, escuro ou seguir o tema do WhatsApp;
-- salvar ou não salvar o token neste navegador;
 - incluir ou não incluir histórico de mensagens.
 
 Mesmo com a opção **Abrir painel automaticamente** desligada, o painel sempre abre quando a URL tiver `client` e `token`.

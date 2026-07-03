@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm } from "node:fs/promises";
+import { copyFile, cp, mkdir, rm } from "node:fs/promises";
 import { build } from "esbuild";
 
 await rm("dist", { recursive: true, force: true });
@@ -35,4 +35,5 @@ await Promise.all([
 ]);
 
 await copyFile("manifest.json", "dist/manifest.json");
+await cp("icons", "dist/icons", { recursive: true });
 await copyFile("vendor/wa-store-migrate.bundle.js", "dist/vendor/wa-store-migrate.bundle.js");

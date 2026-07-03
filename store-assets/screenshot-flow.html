@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        background: #ffffff;
+        color: #111b21;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .wrap {
+        width: 1280px;
+        height: 800px;
+        padding: 68px 84px;
+        background:
+          linear-gradient(180deg, #f7f8fa 0, #ffffff 58%),
+          #ffffff;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 56px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .mark {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: #1daa61;
+      }
+
+      .mark svg {
+        width: 31px;
+        height: 31px;
+      }
+
+      .name {
+        font-size: 21px;
+        font-weight: 700;
+      }
+
+      .tag {
+        color: #5d6b73;
+        font-size: 15px;
+        margin-top: 4px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 44px;
+        line-height: 1.08;
+        max-width: 580px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 42px;
+      }
+
+      .step {
+        min-height: 220px;
+        border: 1px solid #dfe4e8;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 24px;
+        position: relative;
+      }
+
+      .num {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #1daa61;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .step h2 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      .step p {
+        margin: 0;
+        color: #5d6b73;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .arrow {
+        position: absolute;
+        top: 99px;
+        right: -22px;
+        width: 24px;
+        height: 24px;
+        color: #94a0a8;
+        z-index: 2;
+      }
+
+      .footer {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 32px;
+        align-items: stretch;
+      }
+
+      .note {
+        border-left: 5px solid #1daa61;
+        background: #eefbf2;
+        padding: 22px 24px;
+      }
+
+      .note strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .note span {
+        color: #45624f;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .mini {
+        background: #0b141a;
+        border-radius: 8px;
+        color: #ffffff;
+        padding: 22px 24px;
+      }
+
+      .mini strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+
+      .mini div {
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="header">
+        <div class="brand">
+          <div class="mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v10" />
+              <path d="m8 10 4 4 4-4" />
+              <path d="M6 18h12" />
+            </svg>
+          </div>
+          <div>
+            <div class="name">WhatsApp Session Connector</div>
+            <div class="tag">Extensão para instâncias Uazapi</div>
+          </div>
+        </div>
+        <h1>Importação de sessão com validação, chunks e limpeza local</h1>
+      </header>
+
+      <section class="steps">
+        <article class="step">
+          <div class="num">1</div>
+          <h2>Abra pelo painel</h2>
+          <p>Use link direto ou bridge para abrir o WhatsApp Web com os dados da instância.</p>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </article>
+        <article class="step">
+          <div class="num">2</div>
+          <h2>Capture a sessão</h2>
+          <p>A extensão lê a sessão autenticada no WhatsApp Web sem expor dados internos ao SaaS.</p>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </article>
+        <article class="step">
+          <div class="num">3</div>
+          <h2>Envie para a API</h2>
+          <p>O payload é dividido em chunks, com hash SHA-256 por parte e validação no backend.</p>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </article>
+        <article class="step">
+          <div class="num">4</div>
+          <h2>Finalize com segurança</h2>
+          <p>Após a importação, a sessão local do navegador é limpa para evitar uso duplicado.</p>
+        </article>
+      </section>
+
+      <section class="footer">
+        <div class="note"><strong>Projetada para suporte e painéis SaaS</strong><span>A integração pode usar a extensão atual com client/token ou um fork com importKey e gateway do cliente.</span></div>
+        <div class="mini"><strong>Inclui</strong><div>Validação da instância<br />Importação em chunks<br />Histórico como âncora<br />Modo técnico escondido</div></div>
+      </section>
+    </div>
+  </body>
+</html>

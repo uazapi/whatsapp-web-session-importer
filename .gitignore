@@ -3,3 +3,4 @@ dist/
 logs/
 .DS_Store
 *.log
+store-assets/chrome-profile/

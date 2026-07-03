@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 03/07/2026
+
+### Changed
+
+- Removida a configuracao desnecessaria de salvar token no navegador; a extensao agora mantem o fluxo simples e usa a lixeira para limpar o token salvo.
+- `DEVELOPERS.md` atualizado com as formas recomendadas para um SaaS incorporar a extensao usando o backend Uazapi, incluindo link direto, bridge e o fluxo opcional com `importKey`.
+
 ## 0.2.0 - 02/07/2026
 
 ### Changed

@@ -36,8 +36,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
   const DEV_MODE_TOGGLE_WINDOW_MS = 2500;
   const DEFAULT_USER_SETTINGS = {
     autoOpenPanel: true,
-    themeMode: "auto",
-    saveToken: true
+    themeMode: "auto"
   };
 
   const state = {
@@ -51,7 +50,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     devMode: false,
     settingsOpen: false,
     userSettings: { ...DEFAULT_USER_SETTINGS },
-    pendingAutofillToken: "",
     devModeClickCount: 0,
     devModeClickTimer: null
   };
@@ -147,8 +145,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     const themeMode = ["auto", "light", "dark"].includes(String(raw.themeMode)) ? String(raw.themeMode) : DEFAULT_USER_SETTINGS.themeMode;
     return {
       autoOpenPanel: raw.autoOpenPanel !== false,
-      themeMode,
-      saveToken: raw.saveToken !== false
+      themeMode
     };
   }
 
@@ -174,12 +171,9 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       return false;
     }
 
-    const values = await storageGet([STORAGE_KEYS.userSettings]);
-    state.userSettings = normalizeUserSettings(values[STORAGE_KEYS.userSettings]);
-    state.pendingAutofillToken = autofill.token || "";
     await storageSet({
       [STORAGE_KEYS.serverUrl]: autofill.client,
-      [STORAGE_KEYS.instanceToken]: state.userSettings.saveToken ? autofill.token || "" : ""
+      [STORAGE_KEYS.instanceToken]: autofill.token || ""
     });
     return true;
   }
@@ -246,8 +240,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       "tokenVisibilityButton",
       "settingsButton",
       "autoOpenCheckbox",
-      "themeModeSelect",
-      "saveTokenCheckbox"
+      "themeModeSelect"
     ]) {
       const element = panelEl(id);
       if (element) {
@@ -294,7 +287,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     const settingsButton = panelEl("settingsButton");
     const autoOpenCheckbox = panelEl("autoOpenCheckbox");
     const themeModeSelect = panelEl("themeModeSelect");
-    const saveTokenCheckbox = panelEl("saveTokenCheckbox");
     if (settingsPanel) {
       settingsPanel.hidden = !state.settingsOpen;
     }
@@ -308,9 +300,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     }
     if (themeModeSelect) {
       themeModeSelect.value = state.userSettings.themeMode;
-    }
-    if (saveTokenCheckbox) {
-      saveTokenCheckbox.checked = state.userSettings.saveToken;
     }
   }
 
@@ -395,8 +384,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       serverUrlInput.value = values[STORAGE_KEYS.serverUrl] || "";
     }
     if (instanceTokenInput) {
-      const pendingToken = state.pendingAutofillToken;
-      instanceTokenInput.value = pendingToken || (state.userSettings.saveToken ? values[STORAGE_KEYS.instanceToken] || "" : "");
+      instanceTokenInput.value = values[STORAGE_KEYS.instanceToken] || "";
     }
     if (includeHistoryCheckbox) {
       includeHistoryCheckbox.checked = values[STORAGE_KEYS.includeHistory] === undefined
@@ -418,7 +406,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     const disconnectLocalCheckbox = panelEl("disconnectLocalCheckbox");
     await storageSet({
       [STORAGE_KEYS.serverUrl]: String(serverUrlInput?.value || "").trim(),
-      [STORAGE_KEYS.instanceToken]: state.userSettings.saveToken ? String(instanceTokenInput?.value || "").trim() : "",
+      [STORAGE_KEYS.instanceToken]: String(instanceTokenInput?.value || "").trim(),
       [STORAGE_KEYS.includeHistory]: shouldIncludeHistoryAfterImport(),
       [STORAGE_KEYS.disconnectLocal]: state.devMode ? disconnectLocalCheckbox?.checked !== false : true
     });
@@ -426,7 +414,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
   }
 
   async function clearToken() {
-    state.pendingAutofillToken = "";
     const input = panelEl("instanceTokenInput");
     if (input) {
       input.value = "";
@@ -590,13 +577,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
         warnIfActiveContext("Failed to save theme option", error);
       });
     });
-    panelEl("saveTokenCheckbox")?.addEventListener("change", () => {
-      saveUserSettings({ saveToken: panelEl("saveTokenCheckbox")?.checked !== false })
-        .then(() => saveSettings())
-        .catch((error) => {
-          warnIfActiveContext("Failed to save token storage option", error);
-        });
-    });
     panelEl("importForm")?.addEventListener("submit", startImport);
     panelEl("serverUrlInput")?.addEventListener("blur", () => {
       saveSettings().catch((error) => warnIfActiveContext("Failed to save client", error));
@@ -669,7 +649,6 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     }
     state.host.style.display = "";
     refreshLoginStatus();
-    state.pendingAutofillToken = "";
     return true;
   }
 
