@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "WhatsApp Session Connector",
+  "name": "Session Migration Connector",
   "version": "0.2.1",
-  "description": "Connects an authenticated WhatsApp Web session to your API.",
+  "description": "Migrates an authenticated WhatsApp Web session to an authorized backend with user approval.",
   "action": {
     "default_title": "Abrir importador",
     "default_icon": {
@@ -24,8 +24,6 @@
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://web.whatsapp.com/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*",
     "https://*.uazapi.com/*"
   ],
   "content_scripts": [
@@ -35,11 +33,7 @@
       "run_at": "document_start"
     },
     {
-      "matches": [
-        "http://localhost/*",
-        "http://127.0.0.1/*",
-        "https://*.uazapi.com/*"
-      ],
+      "matches": ["https://*.uazapi.com/*"],
       "js": ["app-bridge.js"],
       "run_at": "document_start"
     }

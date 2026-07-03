@@ -2,7 +2,7 @@
  * Fork-friendly customization surface.
  *
  * For most APIs, start here:
- * - Change `api.clientBaseDomain` if the subscription name should resolve to another domain.
+ * - Set `api.clientBaseDomain` if a short client name should resolve to your domain.
  * - Change `api.paths` if your backend uses different routes.
  * - Change `api.authHeaderName` if you use Authorization/Bearer instead of token.
  * - Change `panelText` to rebrand the floating panel without touching logic.
@@ -32,11 +32,7 @@ export const EXTENSION_CUSTOMIZATION = {
   },
   appBridge: {
     source: "whatsapp-session-connector",
-    matches: [
-      "http://localhost/*",
-      "http://127.0.0.1/*",
-      "https://*.uazapi.com/*"
-    ]
+    matches: ["https://*.uazapi.com/*"]
   },
   panelText: {
     title: "Migrar sessão",

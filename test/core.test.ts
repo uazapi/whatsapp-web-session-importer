@@ -15,16 +15,22 @@ import {
 } from "../src/shared/url";
 
 describe("URL helpers", () => {
-  it("normalizes subscription slugs, hosts, local hosts, and full URLs", () => {
+  it("normalizes subscription slugs, hosts, and full HTTPS URLs", () => {
     expect(normalizeBaseUrl("minha-loja")).toBe("https://minha-loja.uazapi.com");
     expect(normalizeBaseUrl("api.example.com")).toBe("https://api.example.com");
-    expect(normalizeBaseUrl("localhost:3000/")).toBe("http://localhost:3000");
     expect(normalizeBaseUrl("https://api.example.com/")).toBe("https://api.example.com");
   });
 
   it("rejects invalid subscription hosts", () => {
     expect(() => normalizeClientHost("bad host")).toThrow("Nome da assinatura invalido");
   });
+
+  it("rejects local or non-HTTPS instance URLs in the production build", () => {
+    expect(() => normalizeBaseUrl("localhost:3000/")).toThrow("Use um backend autorizado publico com HTTPS");
+    expect(() => normalizeBaseUrl("http://api.example.com")).toThrow("Use uma URL HTTPS do backend autorizado");
+    expect(() => normalizeBaseUrl("https://127.0.0.1:3000")).toThrow("Use um backend autorizado publico com HTTPS");
+  });
+
 });
 
 describe("autofill hash helpers", () => {
@@ -148,7 +154,7 @@ describe("contact normalization", () => {
       chats: [{
         jid: "13224841887903@lid",
         lid: "13224841887903@lid",
-        name: "Uazapi Claro"
+        name: "Cliente Claro"
       }],
       messages: [{
         id: "msg1",
@@ -158,7 +164,7 @@ describe("contact normalization", () => {
     }, [{
       jid: "5511999999999@s.whatsapp.net",
       lid: "13224841887903@lid",
-      fullName: "Uazapi Claro"
+      fullName: "Cliente Claro"
     }]);
 
     expect(history.chats[0]).toMatchObject({

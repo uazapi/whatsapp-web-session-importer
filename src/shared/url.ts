@@ -33,6 +33,18 @@ export function normalizeBaseUrl(value: unknown): string {
     return "";
   }
   if (/^https?:\/\//i.test(raw)) {
+    let url: URL;
+    try {
+      url = new URL(raw);
+    } catch {
+      throw new Error("URL da instancia invalida.");
+    }
+    if (url.protocol !== "https:") {
+      throw new Error("Use uma URL HTTPS do backend autorizado.");
+    }
+    if (isLocalHost(url.host)) {
+      throw new Error("Use um backend autorizado publico com HTTPS.");
+    }
     return raw;
   }
   const host = normalizeClientHost(raw);
@@ -40,10 +52,13 @@ export function normalizeBaseUrl(value: unknown): string {
     return "";
   }
   if (isLocalHost(host)) {
-    return `http://${host}`;
+    throw new Error("Use um backend autorizado publico com HTTPS.");
   }
   if (host.includes(".")) {
     return `https://${host}`;
+  }
+  if (!CLIENT_BASE_DOMAIN) {
+    throw new Error("Informe a URL HTTPS completa do backend autorizado.");
   }
   return `https://${host}.${CLIENT_BASE_DOMAIN}`;
 }

@@ -6,10 +6,9 @@ import { buildImportChunks, countExpectedRows } from "./chunks";
 /**
  * HTTP adapter for the backend import protocol.
  *
- * Authentication today is sent in the `token` header because uazapiGO instance
- * routes already use that convention. A fork can change postJSON/getJSON to use
- * Authorization, query params, signed requests, etc. without touching the UI or
- * WhatsApp extraction logic.
+ * Authentication is sent in the configured header. A fork can change
+ * postJSON/getJSON to use Authorization, query params, signed requests, etc.
+ * without touching the UI or WhatsApp extraction logic.
  */
 
 async function sha256Hex(text: string): Promise<string> {

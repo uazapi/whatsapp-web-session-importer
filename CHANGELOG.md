@@ -5,7 +5,9 @@
 ### Changed
 
 - Removida a configuracao desnecessaria de salvar token no navegador; a extensao agora mantem o fluxo simples e usa a lixeira para limpar o token salvo.
-- `DEVELOPERS.md` atualizado com as formas recomendadas para um SaaS incorporar a extensao usando o backend Uazapi, incluindo link direto, bridge e o fluxo opcional com `importKey`.
+- `DEVELOPERS.md` atualizado com as formas recomendadas para um SaaS incorporar a extensao usando backend autorizado, incluindo link direto, bridge e o fluxo opcional com `importKey`.
+- Nome publico ajustado para `Session Migration Connector`, removendo marca de backend do pacote publico.
+- Manifesto de producao manteve o dominio tecnico necessario para link abreviado e bridge, enquanto a marca publica da extensao ficou neutra.
 
 ## 0.2.0 - 02/07/2026
 
@@ -16,7 +18,7 @@
 - Historico voltou a aparecer fora do modo tecnico e fica ligado por padrao.
 - Modo de historico agora envia somente uma mensagem recente por chat como ancora.
 - `messageSecrets` nao fazem mais parte do contrato da extensao; o history sync usa `chatJID`, `messageID`, `fromMe`, `timestamp` e `count`.
-- Painel ganhou configuracoes separadas do modo tecnico, mantendo o modo tecnico escondido por 5 cliques.
+- Painel ganhou configuracoes separadas do modo tecnico opcional, ativado por gesto reservado de diagnostico.
 - Documentacao separada para uso final e desenvolvimento.
 
 ### Fixed
@@ -60,6 +62,6 @@
 
 - Versao inicial da extensao.
 - Instalacao manual pelo Chrome ou Edge.
-- Migracao de sessao conectada no WhatsApp Web para instancia Uazapi.
+- Migracao de sessao conectada no WhatsApp Web para instancia autorizada.
 - Abertura automatica do painel por URL com `client` e `token`.
 - Pacote zip inicial da extensao.

@@ -79,11 +79,14 @@ Exemplos:
 ```text
 minhaempresa       -> https://minhaempresa.uazapi.com
 api.exemplo.com    -> https://api.exemplo.com
-localhost:8080     -> http://localhost:8080
 https://xpto.com   -> https://xpto.com
 ```
 
 Essa regra fica em `src/shared/url.ts`, na função `normalizeBaseUrl`.
+
+O pacote de producao rejeita `http://`, `localhost` e `127.*`. Para testes
+locais, use um fork/build de desenvolvimento e adicione explicitamente os hosts
+locais no manifesto e em `appBridge.matches`.
 
 Para mudar o domínio padrão `uazapi.com`, altere:
 
@@ -656,8 +659,6 @@ Ela roda apenas nos hosts permitidos pelo manifest.
 Hoje os hosts são:
 
 ```text
-http://localhost/*
-http://127.0.0.1/*
 https://*.uazapi.com/*
 ```
 
@@ -693,8 +694,8 @@ Resumo prático:
 
 ```text
 SaaS em *.uazapi.com -> pode detectar com PING.
-SaaS em localhost/127.0.0.1 -> pode detectar com PING em desenvolvimento.
-SaaS em domínio próprio -> precisa adicionar o domínio no manifest/config da extensão.
+SaaS em localhost/127.0.0.1 -> precisa de um build de desenvolvimento com esses hosts adicionados.
+SaaS em domínio próprio -> precisa adicionar o domínio no manifest/config da extensão antes de publicar/forkar.
 Sem bridge/extensão cooperando -> não existe detecção confiável.
 ```
 

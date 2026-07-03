@@ -102,8 +102,8 @@ Ao abrir o WhatsApp Web com `client` e `token` na URL, o painel da extensão abr
 
 Antes de continuar:
 
-1. Confira se o campo **Cliente** mostra o nome da assinatura correto.
-2. Confira se o campo **Token da instância** está correto.
+1. Confira se o campo **Nome da assinatura** mostra o valor correto.
+2. Confira se o campo **Token** está correto.
 3. Clique em **Migrar sessão**.
 
 A extensão vai:

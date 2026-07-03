@@ -1,8 +1,13 @@
-import { copyFile, cp, mkdir, rm } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, rm } from "node:fs/promises";
 import { build } from "esbuild";
 
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist/vendor", { recursive: true });
+
+const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
+const contentScriptFiles = new Set(
+  (manifest.content_scripts || []).flatMap((script) => Array.isArray(script.js) ? script.js : [])
+);
 
 const common = {
   bundle: true,
@@ -13,26 +18,31 @@ const common = {
   logLevel: "info"
 };
 
-await Promise.all([
-  build({
+const builds = [
+  {
     ...common,
     entryPoints: ["src/background/index.ts"],
     outfile: "dist/background.js",
     format: "iife"
-  }),
-  build({
+  },
+  {
     ...common,
     entryPoints: ["src/content/index.ts"],
     outfile: "dist/autofill.js",
     format: "iife"
-  }),
-  build({
+  }
+];
+
+if (contentScriptFiles.has("app-bridge.js")) {
+  builds.push({
     ...common,
     entryPoints: ["src/content/app-bridge.ts"],
     outfile: "dist/app-bridge.js",
     format: "iife"
-  })
-]);
+  });
+}
+
+await Promise.all(builds.map((options) => build(options)));
 
 await copyFile("manifest.json", "dist/manifest.json");
 await cp("icons", "dist/icons", { recursive: true });
