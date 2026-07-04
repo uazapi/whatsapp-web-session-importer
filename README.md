@@ -1,5 +1,13 @@
 # Importador de Sessão do WhatsApp Web
 
+[Instalar pela Chrome Web Store](https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp)
+
+Link direto:
+
+```text
+https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp
+```
+
 Extensão para migrar uma sessão já conectada no WhatsApp Web para a API da Uazapi.
 
 Esta extensão funciona apenas para instâncias Uazapi. Use somente em um computador confiável e não compartilhe o token da instância com outras pessoas.
@@ -8,14 +16,26 @@ Esta extensão funciona apenas para instâncias Uazapi. Use somente em um comput
 
 Você precisa ter:
 
-1. O arquivo `whatsapp-web-session-importer.zip`.
+1. A extensão instalada pela Chrome Web Store.
 2. O nome da assinatura da instância.
 3. O token da instância.
 4. Acesso ao WhatsApp que será conectado na instância.
 
 Se você recebeu um link pronto da equipe de suporte ou do painel da Uazapi, use esse link. Ele já deve vir com `client` e `token` preenchidos.
 
-## 1. Instalar a extensão
+## 1. Instalar a extensão pela Chrome Web Store
+
+Abra o link de instalação:
+
+```text
+https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp
+```
+
+Depois clique em **Adicionar ao Chrome**.
+
+Se você precisar instalar manualmente por ZIP, use os passos abaixo.
+
+### Instalação manual por ZIP
 
 1. Descompacte o arquivo `whatsapp-web-session-importer.zip`.
 2. Abra o Chrome ou Edge.
