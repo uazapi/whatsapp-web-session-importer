@@ -18,6 +18,18 @@ export interface ImportOptions {
   token?: string;
   includeHistory?: boolean;
   disconnectLocal?: boolean;
+  hideHistoryOption?: boolean;
+  lockHistoryOption?: boolean;
+  hideClientField?: boolean;
+  hideTokenField?: boolean;
+  lockClientField?: boolean;
+  lockTokenField?: boolean;
+  panelLayout?: "corner" | "center";
+}
+
+export interface BridgeImportRequest extends ImportOptions {
+  id?: string;
+  createdAt?: number;
 }
 
 export interface StatusPayload {
@@ -39,6 +51,7 @@ export type RuntimePortMessage =
 
 export interface OpenPanelMessage {
   type: typeof CONTENT_MESSAGE_TYPES.openPanel;
+  source?: "action" | "bridge";
 }
 
 export { APP_BRIDGE_MESSAGE_TYPES, BACKGROUND_COMMANDS, CONTENT_MESSAGE_TYPES, PORT_MESSAGE_TYPES, PORT_NAMES };

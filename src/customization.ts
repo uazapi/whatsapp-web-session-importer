@@ -58,7 +58,7 @@ export const EXTENSION_CUSTOMIZATION = {
     closeSettings: "Fechar configurações",
     settingsTitle: "Configurações",
     autoOpenSetting: "Abrir painel automaticamente",
-    autoOpenSettingHint: "Mesmo desativado, links com assinatura/token na URL sempre abrem o painel.",
+    autoOpenSettingHint: "Mesmo desativado, chamadas pelo SDK/bridge continuam abrindo o painel.",
     themeSetting: "Tema do painel",
     themeFollowWhatsApp: "Seguir WhatsApp",
     themeLight: "Claro",

@@ -34,9 +34,20 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
 
   const DEV_MODE_TOGGLE_CLICKS = 5;
   const DEV_MODE_TOGGLE_WINDOW_MS = 2500;
+  const LOGIN_STATUS_REFRESH_MS = 1000;
+  const LOGIN_STATUS_DEBOUNCE_MS = 150;
   const DEFAULT_USER_SETTINGS = {
-    autoOpenPanel: true,
+    autoOpenPanel: false,
     themeMode: "auto"
+  };
+  const DEFAULT_BRIDGE_UI_OPTIONS = {
+    hideHistoryOption: false,
+    lockHistoryOption: false,
+    hideClientField: false,
+    hideTokenField: false,
+    lockClientField: false,
+    lockTokenField: false,
+    panelLayout: "corner"
   };
 
   const state = {
@@ -45,11 +56,17 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     importRunning: false,
     importPort: null,
     themeObserver: null,
+    loginObserver: null,
+    loginRefreshTimer: null,
+    loginRefreshInterval: null,
     cleanupStarted: false,
     extensionContextInvalidated: false,
+    loginReady: false,
     devMode: false,
     settingsOpen: false,
     userSettings: { ...DEFAULT_USER_SETTINGS },
+    bridgeUiOptions: { ...DEFAULT_BRIDGE_UI_OPTIONS },
+    centerLayoutReady: false,
     devModeClickCount: 0,
     devModeClickTimer: null
   };
@@ -131,6 +148,22 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     }
   }
 
+  async function storageRemove(keys) {
+    if (!hasExtensionContext()) {
+      markExtensionContextInvalidated();
+      return false;
+    }
+    try {
+      await chrome.storage.local.remove(keys);
+      return true;
+    } catch (error) {
+      if (handleExtensionContextFailure(error)) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   function extensionVersion() {
     try {
       return chrome.runtime?.getManifest?.().version || "";
@@ -144,7 +177,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     const raw = value && typeof value === "object" ? value : {};
     const themeMode = ["auto", "light", "dark"].includes(String(raw.themeMode)) ? String(raw.themeMode) : DEFAULT_USER_SETTINGS.themeMode;
     return {
-      autoOpenPanel: raw.autoOpenPanel !== false,
+      autoOpenPanel: raw.autoOpenPanel === true,
       themeMode
     };
   }
@@ -175,6 +208,50 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       [STORAGE_KEYS.serverUrl]: autofill.client,
       [STORAGE_KEYS.instanceToken]: autofill.token || ""
     });
+    return true;
+  }
+
+  function applyBridgeUiOptions(request) {
+    const panelLayout = request?.panelLayout === "center" ? "center" : "corner";
+    state.bridgeUiOptions = {
+      hideHistoryOption: request?.hideHistoryOption === true,
+      lockHistoryOption: request?.lockHistoryOption === true,
+      hideClientField: request?.hideClientField === true,
+      hideTokenField: request?.hideTokenField === true,
+      lockClientField: request?.lockClientField === true,
+      lockTokenField: request?.lockTokenField === true,
+      panelLayout
+    };
+    state.centerLayoutReady = panelLayout === "center" && (state.loginReady || isWhatsAppLoggedIn());
+  }
+
+  function resetBridgeUiOptions() {
+    state.bridgeUiOptions = { ...DEFAULT_BRIDGE_UI_OPTIONS };
+    state.centerLayoutReady = false;
+  }
+
+  async function applyBridgeImportRequest() {
+    const values = await storageGet([STORAGE_KEYS.bridgeImportRequest]);
+    const request = values[STORAGE_KEYS.bridgeImportRequest];
+    if (!request || typeof request !== "object") {
+      return false;
+    }
+
+    await storageRemove([STORAGE_KEYS.bridgeImportRequest]);
+    const createdAt = Number(request.createdAt || 0);
+    if (createdAt && Date.now() - createdAt > 10 * 60 * 1000) {
+      return false;
+    }
+
+    applyBridgeUiOptions(request);
+    const next: Record<string, unknown> = {
+      [STORAGE_KEYS.serverUrl]: String(request.client || "").trim(),
+      [STORAGE_KEYS.instanceToken]: String(request.token || "").trim()
+    };
+    if (typeof request.includeHistory === "boolean") {
+      next[STORAGE_KEYS.includeHistory] = request.includeHistory;
+    }
+    await storageSet(next);
     return true;
   }
 
@@ -210,17 +287,64 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     result.className = kind ? `result ${kind}` : "result";
   }
 
-  function setStatus(message) {
-    const label = panelEl("statusLabel");
-    if (label) {
-      label.textContent = message || PANEL_TEXT.defaultStatus;
-    }
-  }
-
   function refreshLoginStatus() {
     const loggedIn = isWhatsAppLoggedIn();
-    setStatus(loggedIn ? PANEL_TEXT.defaultStatus : PANEL_TEXT.loggedOutStatus);
+    state.loginReady = loggedIn;
+    renderEffectivePanelLayout(loggedIn);
+    renderHeaderStatus(loggedIn);
+    setBusy(state.importRunning);
     return loggedIn;
+  }
+
+  function renderEffectivePanelLayout(loggedIn = state.loginReady) {
+    if (!state.host) {
+      return;
+    }
+    const requestedLayout = state.bridgeUiOptions.panelLayout;
+    if (requestedLayout !== "center") {
+      state.centerLayoutReady = false;
+      state.host.dataset.layout = "corner";
+      return;
+    }
+    if (loggedIn) {
+      state.centerLayoutReady = true;
+    }
+    state.host.dataset.layout = state.centerLayoutReady ? "center" : "corner";
+  }
+
+  function isPanelVisible() {
+    return Boolean(state.host?.isConnected && state.host.style.display !== "none");
+  }
+
+  function updateVisibleLoginStatus() {
+    if (!state.root || !isPanelVisible()) {
+      return;
+    }
+    refreshLoginStatus();
+  }
+
+  function scheduleLoginStatusRefresh() {
+    if (state.loginRefreshTimer) {
+      return;
+    }
+    state.loginRefreshTimer = window.setTimeout(() => {
+      state.loginRefreshTimer = null;
+      updateVisibleLoginStatus();
+    }, LOGIN_STATUS_DEBOUNCE_MS);
+  }
+
+  function startLoginStatusWatch() {
+    if (!state.loginObserver && typeof MutationObserver === "function") {
+      const target = document.body || document.documentElement;
+      if (target) {
+        state.loginObserver = new MutationObserver(scheduleLoginStatusRefresh);
+        state.loginObserver.observe(target, { childList: true, subtree: true });
+      }
+    }
+    if (!state.loginRefreshInterval) {
+      state.loginRefreshInterval = window.setInterval(updateVisibleLoginStatus, LOGIN_STATUS_REFRESH_MS);
+    }
+    scheduleLoginStatusRefresh();
   }
 
   function setBusy(busy) {
@@ -245,7 +369,19 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       const element = panelEl(id);
       if (element) {
         const devOnly = element.classList.contains("dev-only") || Boolean(element.closest?.(".dev-only"));
-        element.disabled = state.importRunning || (devOnly && !state.devMode);
+        const historyLocked = id === "includeHistoryCheckbox" && state.bridgeUiOptions.lockHistoryOption;
+        const clientLocked = id === "serverUrlInput" && state.bridgeUiOptions.lockClientField;
+        const tokenLocked = (
+          (id === "instanceTokenInput" || id === "tokenClearButton") &&
+          state.bridgeUiOptions.lockTokenField
+        );
+        const requiresLogin = id === "importButton" || id === "historyOnlyButton";
+        element.disabled = state.importRunning ||
+          (requiresLogin && !state.loginReady) ||
+          historyLocked ||
+          clientLocked ||
+          tokenLocked ||
+          (devOnly && !state.devMode);
       }
     }
   }
@@ -266,6 +402,126 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
   function shouldIncludeHistoryAfterImport() {
     const checkbox = panelEl("includeHistoryCheckbox");
     return checkbox ? checkbox.checked === true : DEFAULT_INCLUDE_HISTORY;
+  }
+
+  function readJSONLocalStorage(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function widToJid(wid) {
+    if (!wid || typeof wid !== "string") {
+      return "";
+    }
+    const at = wid.lastIndexOf("@");
+    const head = at >= 0 ? wid.slice(0, at) : wid;
+    const server = at >= 0 ? wid.slice(at + 1) : "s.whatsapp.net";
+    const colon = head.indexOf(":");
+    const userAndAgent = colon >= 0 ? head.slice(0, colon) : head;
+    const device = colon >= 0 ? Number(head.slice(colon + 1)) : 0;
+    const dot = userAndAgent.indexOf(".");
+    const user = dot >= 0 ? userAndAgent.slice(0, dot) : userAndAgent;
+    return `${user}:${Number.isFinite(device) ? device : 0}@${server}`;
+  }
+
+  function detectWhatsAppAccount() {
+    return {
+      jid: widToJid(readJSONLocalStorage("last-wid-md")),
+      lid: widToJid(readJSONLocalStorage("WALid"))
+    };
+  }
+
+  function formatWhatsAppJid(value) {
+    const raw = String(value || "");
+    const user = raw.split("@")[0].split(":")[0].replace(/\D/g, "");
+    if (!user) {
+      return raw;
+    }
+    if (user.length === 13 && user.startsWith("55")) {
+      return `+${user.slice(0, 2)} ${user.slice(2, 4)} ${user.slice(4, 9)}-${user.slice(9)}`;
+    }
+    if (user.length === 12 && user.startsWith("55")) {
+      return `+${user.slice(0, 2)} ${user.slice(2, 4)} ${user.slice(4, 8)}-${user.slice(8)}`;
+    }
+    if (user.length > 4) {
+      return `+${user}`;
+    }
+    return raw;
+  }
+
+  function formatWhatsAppLid(value) {
+    const raw = String(value || "");
+    const user = raw.split("@")[0].split(":")[0];
+    return user || raw;
+  }
+
+  function setHeaderAccountStatus(value) {
+    const label = panelEl("statusLabel");
+    if (!label) {
+      return;
+    }
+    label.textContent = "Conta: ";
+    const account = document.createElement("span");
+    account.className = "status-account";
+    account.textContent = value;
+    label.append(account);
+  }
+
+  function renderHeaderStatus(loggedIn = isWhatsAppLoggedIn()) {
+    const label = panelEl("statusLabel");
+    if (!label) {
+      return;
+    }
+    const account = detectWhatsAppAccount();
+    if (!loggedIn) {
+      label.textContent = "Aguardando WhatsApp Web carregar";
+      return;
+    }
+    if (account.jid) {
+      setHeaderAccountStatus(formatWhatsAppJid(account.jid));
+      return;
+    }
+    if (account.lid) {
+      setHeaderAccountStatus(formatWhatsAppLid(account.lid));
+      return;
+    }
+    label.textContent = "WhatsApp Web conectado";
+  }
+
+  function renderBridgeUiOptions() {
+    renderEffectivePanelLayout();
+    const serverUrlOption = panelEl("serverUrlOption");
+    const instanceTokenOption = panelEl("instanceTokenOption");
+    const serverUrlInput = panelEl("serverUrlInput");
+    const instanceTokenInput = panelEl("instanceTokenInput");
+    const tokenClearButton = panelEl("tokenClearButton");
+    const includeHistoryOption = panelEl("includeHistoryOption");
+    const includeHistoryCheckbox = panelEl("includeHistoryCheckbox");
+    if (serverUrlOption) {
+      serverUrlOption.hidden = state.bridgeUiOptions.hideClientField;
+    }
+    if (instanceTokenOption) {
+      instanceTokenOption.hidden = state.bridgeUiOptions.hideTokenField;
+    }
+    if (serverUrlInput) {
+      serverUrlInput.disabled = state.importRunning || state.bridgeUiOptions.lockClientField;
+    }
+    if (instanceTokenInput) {
+      instanceTokenInput.disabled = state.importRunning || state.bridgeUiOptions.lockTokenField;
+    }
+    if (tokenClearButton) {
+      tokenClearButton.disabled = state.importRunning || state.bridgeUiOptions.lockTokenField;
+    }
+    if (includeHistoryOption) {
+      includeHistoryOption.hidden = state.bridgeUiOptions.hideHistoryOption;
+    }
+    if (includeHistoryCheckbox) {
+      includeHistoryCheckbox.disabled = state.importRunning || state.bridgeUiOptions.lockHistoryOption;
+    }
+    renderHeaderStatus();
   }
 
   function renderCleanupNotice() {
@@ -395,6 +651,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
       disconnectLocalCheckbox.checked = values[STORAGE_KEYS.devMode] === true ? values[STORAGE_KEYS.disconnectLocal] !== false : true;
     }
     setDevMode(values[STORAGE_KEYS.devMode] === true);
+    renderBridgeUiOptions();
     renderSettingsPanel();
     applyThemeClass();
   }
@@ -635,6 +892,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     state.host = host;
     state.root = root;
     startThemeWatch();
+    startLoginStatusWatch();
     bindPanelEvents();
     renderExtensionVersion();
     await loadSettings();
@@ -642,9 +900,13 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
     setTokenVisible(false);
   }
 
-  async function openPanel() {
+  async function openPanel(options: { source?: "action" | "bridge" } = {}) {
     await ensurePanel();
     if (!state.importRunning) {
+      const bridgeChanged = await applyBridgeImportRequest();
+      if (!bridgeChanged && options.source === "action") {
+        resetBridgeUiOptions();
+      }
       await loadSettings();
     }
     state.host.style.display = "";
@@ -658,7 +920,7 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
         if (!message || message.type !== CONTENT_MESSAGE_TYPES.openPanel) {
           return false;
         }
-        openPanel()
+        openPanel({ source: message.source })
           .then((opened) => sendResponse({ ok: opened, loggedIn: isWhatsAppLoggedIn() }))
           .catch((error) => sendResponse({ ok: false, error: error.message || "Falha ao abrir painel" }));
         return true;
@@ -682,6 +944,10 @@ import { PANEL_HOST_ID, PANEL_TEXT, panelTemplate } from "./panel/template";
   applyAutofillFromUrl()
     .then(async (changed) => {
       if (changed) {
+        return openPanel();
+      }
+      const bridgeChanged = await applyBridgeImportRequest();
+      if (bridgeChanged) {
         return openPanel();
       }
       const values = await storageGet([STORAGE_KEYS.userSettings]);

@@ -1,6 +1,6 @@
 {
   "name": "whatsapp-web-session-importer",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,9 @@
     "test": "vitest run",
     "build:vendor": "node scripts/build-vendor.mjs",
     "build:extension": "node scripts/build-extension.mjs",
+    "build:extension:local": "node scripts/build-extension.mjs --local-bridge",
     "build": "npm run build:vendor && npm run build:extension",
+    "build:local": "npm run build:vendor && npm run build:extension:local",
     "dist": "npm run build",
     "zip:dist": "rm -f whatsapp-web-session-importer.zip && npm run dist && cd dist && zip -qr ../whatsapp-web-session-importer.zip .",
     "zip": "npm run typecheck && npm test && npm run zip:dist",

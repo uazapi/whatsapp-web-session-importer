@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
   instanceToken: "instanceToken",
   includeHistory: "includeHistory",
   disconnectLocal: "disconnectLocal",
+  bridgeImportRequest: "bridgeImportRequest",
   devMode: "devMode",
   userSettings: "userSettings"
 } as const;

@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Session Connector Demo</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #111413;
+        --panel: #1d211f;
+        --panel-2: #171a18;
+        --line: #303833;
+        --text: #f2f5f3;
+        --muted: #aab4ae;
+        --primary: #25c46a;
+        --primary-hover: #2fd979;
+        --danger: #ff6b6b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      main {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(280px, 360px) minmax(320px, 420px) minmax(320px, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .panel,
+      .preview-shell {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 18px;
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 14px;
+        font-size: 18px;
+        line-height: 1.25;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        margin: 14px 0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .config-group {
+        display: grid;
+        gap: 0;
+        padding-top: 12px;
+      }
+
+      .config-group + .config-group {
+        margin-top: 4px;
+        border-top: 1px solid var(--line);
+      }
+
+      .config-title {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        padding: 0 12px;
+        background: #262b28;
+        color: var(--text);
+        font: inherit;
+      }
+
+      input:focus {
+        outline: 2px solid rgba(37, 196, 106, .35);
+        border-color: var(--primary);
+      }
+
+      .check {
+        display: flex;
+        grid-template-columns: none;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+      }
+
+      code {
+        display: block;
+        margin-top: 8px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--muted);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 12px;
+      }
+
+      .code-title {
+        margin-top: 16px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .preview-stage {
+        min-height: 590px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(rgba(5, 10, 13, .72), rgba(5, 10, 13, .72)),
+          repeating-linear-gradient(0deg, rgba(255, 255, 255, .04) 0 1px, transparent 1px 74px),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 92px),
+          #0b141a;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .preview-stage[data-layout="center"] {
+        backdrop-filter: blur(2px);
+        display: grid;
+        place-items: center;
+        padding: 18px;
+      }
+
+      .preview-stage[data-layout="corner"] .extension-preview {
+        position: absolute;
+        right: 18px;
+        top: 18px;
+      }
+
+      .extension-preview {
+        width: min(368px, 100%);
+        border: 1px solid rgba(37, 196, 106, .28);
+        border-radius: 8px;
+        background: #1d1f1f;
+        color: #fafafa;
+        box-shadow: 0 18px 46px rgba(0, 0, 0, .5), 0 0 30px rgba(33, 192, 99, .2);
+        overflow: hidden;
+      }
+
+      .preview-topbar {
+        min-height: 68px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+      }
+
+      .preview-brand {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+      }
+
+      .preview-mark {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #0a0a0a;
+        font-weight: 800;
+      }
+
+      .preview-title {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 800;
+      }
+
+      .preview-subtitle {
+        display: block;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+      }
+
+      .preview-account-value {
+        color: rgba(255, 255, 255, .82);
+        font-weight: 600;
+      }
+
+      .preview-close {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, .62);
+        font: inherit;
+        font-size: 22px;
+      }
+
+      .preview-form {
+        display: grid;
+        gap: 14px;
+        padding: 16px 18px 18px;
+      }
+
+      .preview-field {
+        display: grid;
+        gap: 6px;
+        color: #fafafa;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .preview-input {
+        min-height: 40px;
+        border-radius: 8px;
+        background: #242626;
+        color: rgba(255, 255, 255, .62);
+        padding: 10px 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .preview-input[data-locked="true"]::after {
+        content: " travado";
+        color: rgba(255, 255, 255, .38);
+      }
+
+      .preview-account {
+        display: grid;
+        gap: 8px;
+        padding: 10px 11px;
+        border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 8px;
+        background: #161717;
+      }
+
+      .preview-account-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .preview-row {
+        display: grid;
+        gap: 2px;
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+
+      .preview-row strong {
+        color: #fafafa;
+        font-size: 11px;
+      }
+
+      .preview-check {
+        display: grid;
+        grid-template-columns: 16px minmax(0, 1fr);
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .preview-check[data-locked="true"] {
+        color: rgba(255, 255, 255, .42);
+      }
+
+      .preview-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        background: var(--primary);
+        position: relative;
+      }
+
+      .preview-check[data-locked="true"][data-checked="true"] .preview-box {
+        background: rgba(255, 255, 255, .38);
+      }
+
+      .preview-check[data-checked="false"] .preview-box {
+        background: transparent;
+        border-color: rgba(255, 255, 255, .36);
+      }
+
+      .preview-check[data-locked="true"][data-checked="false"] .preview-box {
+        border-color: rgba(255, 255, 255, .26);
+      }
+
+      .preview-box::after {
+        content: "";
+        width: 5px;
+        height: 8px;
+        border-bottom: 2px solid #0a0a0a;
+        border-right: 2px solid #0a0a0a;
+        position: absolute;
+        left: 5px;
+        top: 2px;
+        transform: rotate(45deg);
+      }
+
+      .preview-check[data-checked="false"] .preview-box::after {
+        display: none;
+      }
+
+      .preview-button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 6px;
+        background: var(--primary);
+        color: #0a0a0a;
+        font: inherit;
+        font-weight: 800;
+      }
+
+      .preview-notice {
+        padding: 9px 11px;
+        border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 8px;
+        background: #161717;
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .preview-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 18px 10px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+      }
+
+      [data-preview-hidden="true"] {
+        display: none !important;
+      }
+
+      @media (max-width: 1050px) {
+        main {
+          grid-template-columns: minmax(280px, 1fr) minmax(320px, 420px);
+        }
+
+        .preview-shell {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 760px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <h1>Config teste</h1>
+        <section class="config-group">
+          <div class="config-title">Cliente</div>
+          <label>
+            Nome da assinatura
+            <input id="client" type="text" value="minha-loja" autocomplete="off" />
+          </label>
+          <label class="check">
+            <input id="showClientField" type="checkbox" />
+            Mostrar campo client
+          </label>
+          <label class="check">
+            <input id="canEditClient" type="checkbox" />
+            Permitir editar client
+          </label>
+        </section>
+
+        <section class="config-group">
+          <div class="config-title">Token</div>
+          <label>
+            Token
+            <input id="token" type="text" value="00000000-0000-4000-8000-000000000000" autocomplete="off" />
+          </label>
+          <label class="check">
+            <input id="showTokenField" type="checkbox" />
+            Mostrar campo token
+          </label>
+          <label class="check">
+            <input id="canEditToken" type="checkbox" />
+            Permitir editar token
+          </label>
+        </section>
+
+        <section class="config-group">
+          <div class="config-title">Historico</div>
+          <label class="check">
+            <input id="includeHistory" type="checkbox" checked />
+            Incluir historico
+          </label>
+          <label class="check">
+            <input id="hideHistoryOption" type="checkbox" checked />
+            Esconder opcao de historico na extensao
+          </label>
+          <label class="check">
+            <input id="lockHistoryOption" type="checkbox" checked />
+            Travar opcao de historico na extensao
+          </label>
+        </section>
+
+        <section class="config-group">
+          <div class="config-title">Comportamento</div>
+          <label class="check">
+            <input id="centerPanel" type="checkbox" checked />
+            Abrir painel no centro
+          </label>
+        </section>
+
+        <div class="code-title">Payload enviado (token oculto)</div>
+        <code id="payloadPreview"></code>
+        <div class="code-title">Codigo equivalente (token oculto)</div>
+        <code id="mountPreview"></code>
+      </section>
+
+      <section>
+        <h2>Componente pronto</h2>
+        <div id="whatsapp-migration"></div>
+      </section>
+
+      <section class="preview-shell">
+        <h2>Preview da extensao</h2>
+        <div id="previewStage" class="preview-stage" data-layout="center">
+          <div class="extension-preview">
+            <div class="preview-topbar">
+              <div class="preview-brand">
+                <div class="preview-mark">WA</div>
+                <div>
+                  <span class="preview-title">Migrar sessao</span>
+                  <span id="previewSubtitle" class="preview-subtitle">Conta: <span class="preview-account-value">+55 11 99999-9999</span></span>
+                </div>
+              </div>
+              <button class="preview-close" type="button" aria-label="Fechar">×</button>
+            </div>
+            <div class="preview-form">
+              <div id="previewClientField" class="preview-field">
+                Nome da assinatura
+                <div id="previewClientInput" class="preview-input" data-preview-client>minha-loja</div>
+              </div>
+              <div id="previewTokenField" class="preview-field">
+                Token
+                <div id="previewTokenInput" class="preview-input">••••••••••••••••</div>
+              </div>
+              <div id="previewHistoryOption" class="preview-check">
+                <span class="preview-box"></span>
+                <span>Incluir histórico de mensagens (beta)</span>
+              </div>
+              <button class="preview-button" type="button">Migrar sessão</button>
+              <div class="preview-notice"><strong>Atenção:</strong> esta sessão será migrada para a assinatura informada e desconectada deste navegador.</div>
+            </div>
+            <div class="preview-meta">
+              <span>Modo padrão</span>
+              <span>Versão v0.2.3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./sdk.js"></script>
+    <script>
+      function values() {
+        return {
+          client: document.getElementById("client").value,
+          showClientField: document.getElementById("showClientField").checked,
+          canEditClient: document.getElementById("canEditClient").checked,
+          token: document.getElementById("token").value,
+          showTokenField: document.getElementById("showTokenField").checked,
+          canEditToken: document.getElementById("canEditToken").checked,
+          includeHistory: document.getElementById("includeHistory").checked,
+          hideHistoryOption: document.getElementById("hideHistoryOption").checked,
+          lockHistoryOption: document.getElementById("lockHistoryOption").checked,
+          panelLayout: document.getElementById("centerPanel").checked ? "center" : "corner"
+        };
+      }
+
+      function renderPreview() {
+        var config = values();
+        document.getElementById("previewStage").dataset.layout = config.panelLayout;
+        document.getElementById("previewSubtitle").innerHTML = 'Conta: <span class="preview-account-value">+55 11 99999-9999</span>';
+        document.getElementById("previewClientField").dataset.previewHidden = String(!config.showClientField);
+        document.getElementById("previewTokenField").dataset.previewHidden = String(!config.showTokenField);
+        document.getElementById("previewHistoryOption").dataset.previewHidden = String(config.hideHistoryOption);
+        document.getElementById("previewHistoryOption").dataset.locked = String(config.lockHistoryOption);
+        document.getElementById("previewHistoryOption").dataset.checked = String(config.includeHistory);
+        document.getElementById("previewClientInput").dataset.locked = String(!config.canEditClient);
+        document.getElementById("previewTokenInput").dataset.locked = String(!config.canEditToken);
+        document.querySelector("[data-preview-client]").textContent = config.client || "minha-loja";
+        renderPayloadPreview(config);
+      }
+
+      function publicPayload(config) {
+        return Object.assign({}, config, {
+          token: config.token ? "[token preenchido]" : ""
+        });
+      }
+
+      function renderPayloadPreview(config) {
+        var payload = publicPayload(config);
+        document.getElementById("payloadPreview").textContent = JSON.stringify(payload, null, 2);
+        document.getElementById("mountPreview").textContent = [
+          '<div id="whatsapp-migration"></div>',
+          '<script src="https://connector.uazapi.com/sdk.js"></' + 'script>',
+          '<script>',
+          '  UazapiConnector.mount("#whatsapp-migration", ' + JSON.stringify(payload, null, 2).replace(/\n/g, "\n  ") + ');',
+          '</' + 'script>'
+        ].join("\n");
+      }
+
+      var widget = UazapiConnector.mount("#whatsapp-migration", {
+        brandName: "Migrar sessao",
+        subtitle: "Conecte a sessao ativa do WhatsApp Web.",
+        buttonLabel: "Abrir WhatsApp",
+        markLabel: "WA",
+        primaryColor: "#25c46a",
+        includeHistory: true,
+        panelLayout: "center",
+        hideHistoryOption: true,
+        lockHistoryOption: true,
+        getPayload: values
+      });
+
+      ["client", "token", "includeHistory", "centerPanel", "showClientField", "canEditClient", "showTokenField", "canEditToken", "hideHistoryOption", "lockHistoryOption"].forEach(function (id) {
+        document.getElementById(id).addEventListener("input", function () {
+          renderPreview();
+          widget.refresh();
+        });
+        document.getElementById(id).addEventListener("change", function () {
+          renderPreview();
+          widget.refresh();
+        });
+      });
+
+      renderPreview();
+    </script>
+  </body>
+</html>

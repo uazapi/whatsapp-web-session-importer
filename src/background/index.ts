@@ -389,48 +389,192 @@ chrome.runtime.onConnect.addListener((port) => {
   });
 });
 
-async function openPanelInTab(tab) {
-  if (!tab || !tab.id || !String(tab.url || "").startsWith(WHATSAPP_WEB_URL_PREFIX)) {
-    return;
+async function openPanelInTab(tab, source = "action") {
+  if (!isWhatsAppWebTab(tab)) {
+    return false;
   }
-  const message = { type: CONTENT_MESSAGE_TYPES.openPanel };
+  const message = { type: CONTENT_MESSAGE_TYPES.openPanel, source };
   try {
     await chrome.tabs.sendMessage(tab.id, message);
-    return;
+    return true;
   } catch {}
 
   try {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["autofill.js"] });
     await chrome.tabs.sendMessage(tab.id, message);
+    return true;
   } catch (error) {
     console.warn("Failed to open floating panel", error);
+    return false;
   }
 }
 
-async function openWhatsAppWithAutofill(client, token) {
-  const params = new URLSearchParams();
-  if (client) {
-    params.set("client", String(client));
+function optionalBoolean(value) {
+  if (value === true || value === "true" || value === "1" || value === 1) {
+    return true;
   }
-  if (token) {
-    params.set("token", String(token));
+  if (value === false || value === "false" || value === "0" || value === 0) {
+    return false;
   }
-  const suffix = params.toString() ? `#${params.toString()}` : "";
-  const url = `${WHATSAPP_WEB_URL_PREFIX}${suffix}`;
-  const tab = await chrome.tabs.create({ url, active: true });
-  return { ok: true, tabId: tab.id };
+  return undefined;
+}
+
+function bridgeImportRequestFromMessage(message) {
+  const includeHistory = optionalBoolean(message.includeHistory);
+  const hideHistoryOption = optionalBoolean(message.hideHistoryOption);
+  const lockHistoryOption = optionalBoolean(message.lockHistoryOption);
+  const hideClientField = optionalBoolean(message.hideClientField);
+  const hideTokenField = optionalBoolean(message.hideTokenField);
+  const lockClientField = optionalBoolean(message.lockClientField);
+  const lockTokenField = optionalBoolean(message.lockTokenField);
+  const request = {
+    id: `bridge-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    createdAt: Date.now(),
+    client: String(message.client || "").trim(),
+    token: String(message.token || "").trim()
+  };
+  if (includeHistory !== undefined) {
+    request.includeHistory = includeHistory;
+  }
+  if (hideHistoryOption !== undefined) {
+    request.hideHistoryOption = hideHistoryOption;
+  }
+  if (lockHistoryOption !== undefined) {
+    request.lockHistoryOption = lockHistoryOption;
+  }
+  if (hideClientField !== undefined) {
+    request.hideClientField = hideClientField;
+  }
+  if (hideTokenField !== undefined) {
+    request.hideTokenField = hideTokenField;
+  }
+  if (lockClientField !== undefined) {
+    request.lockClientField = lockClientField;
+  }
+  if (lockTokenField !== undefined) {
+    request.lockTokenField = lockTokenField;
+  }
+  if (message.panelLayout === "center" || message.panelLayout === "corner") {
+    request.panelLayout = message.panelLayout;
+  }
+  return request;
+}
+
+function isWhatsAppWebTab(tab) {
+  return Boolean(tab?.id && String(tab.url || tab.pendingUrl || "").startsWith(WHATSAPP_WEB_URL_PREFIX));
+}
+
+function newestTab(tabs) {
+  return [...tabs].sort((a, b) => Number(b.lastAccessed || 0) - Number(a.lastAccessed || 0))[0] || null;
+}
+
+async function activeWhatsAppTab(preferredWindowId) {
+  const tabs = await chrome.tabs.query({ url: `${WHATSAPP_WEB_URL_PREFIX}*` });
+  const whatsappTabs = tabs.filter(isWhatsAppWebTab);
+  if (typeof preferredWindowId === "number") {
+    const sameWindowTab = newestTab(whatsappTabs.filter((tab) => tab.windowId === preferredWindowId));
+    if (sameWindowTab) {
+      return sameWindowTab;
+    }
+  }
+  return newestTab(whatsappTabs);
+}
+
+async function activateTab(tab) {
+  const activeTab = await chrome.tabs.update(tab.id, { active: true });
+  if (tab.windowId) {
+    await chrome.windows.update(tab.windowId, { focused: true }).catch(() => null);
+  }
+  return activeTab || tab;
+}
+
+function waitForWhatsAppTabReady(tab, timeoutMs = 15000) {
+  if (!tab?.id) {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      resolve(null);
+    }, timeoutMs);
+    const listener = (tabId, changeInfo, updatedTab) => {
+      if (tabId !== tab.id || !isWhatsAppWebTab(updatedTab)) {
+        return;
+      }
+      if (changeInfo.status === "complete" || updatedTab.status === "complete") {
+        clearTimeout(timeout);
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve(updatedTab);
+      }
+    };
+    chrome.tabs.onUpdated.addListener(listener);
+  });
+}
+
+async function openPanelWhenTabReady(tab, source = "action") {
+  if (await openPanelInTab(tab, source)) {
+    return true;
+  }
+  const readyTab = await waitForWhatsAppTabReady(tab);
+  return readyTab ? openPanelInTab(readyTab, source) : false;
+}
+
+async function openFromActionClick(tab) {
+  if (isWhatsAppWebTab(tab)) {
+    await openPanelWhenTabReady(tab, "action");
+    return;
+  }
+  const existing = await activeWhatsAppTab(tab?.windowId);
+  if (existing) {
+    await openPanelWhenTabReady(await activateTab(existing), "action");
+    return;
+  }
+  await openPanelWhenTabReady(await chrome.tabs.create({ url: WHATSAPP_WEB_URL_PREFIX, active: true }), "action");
+}
+
+async function openWhatsAppWithBridgeOptions(message) {
+  const request = bridgeImportRequestFromMessage(message);
+  const values = {
+    [STORAGE_KEYS.bridgeImportRequest]: request,
+    [STORAGE_KEYS.serverUrl]: request.client,
+    [STORAGE_KEYS.instanceToken]: request.token
+  };
+  if (request.includeHistory !== undefined) {
+    values[STORAGE_KEYS.includeHistory] = request.includeHistory;
+  }
+  await chrome.storage.local.set(values);
+
+  const existing = await activeWhatsAppTab();
+  const tab = existing
+    ? await activateTab(existing)
+    : await chrome.tabs.create({ url: WHATSAPP_WEB_URL_PREFIX, active: true });
+
+  if (existing) {
+    await openPanelInTab(tab, "bridge");
+  }
+
+  return { ok: true, tabId: tab.id, reused: Boolean(existing) };
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (!message || message.type !== APP_BRIDGE_MESSAGE_TYPES.startImport) {
+  if (!message) {
     return false;
   }
-  openWhatsAppWithAutofill(message.client || "", message.token || "")
+  if (message.type === APP_BRIDGE_MESSAGE_TYPES.ping) {
+    sendResponse({ ok: true, version: chrome.runtime.getManifest().version });
+    return false;
+  }
+  if (message.type !== APP_BRIDGE_MESSAGE_TYPES.startImport) {
+    return false;
+  }
+  openWhatsAppWithBridgeOptions(message)
     .then(sendResponse)
     .catch((error) => sendResponse({ ok: false, error: error.message || "Falha ao abrir WhatsApp Web" }));
   return true;
 });
 
 chrome.action.onClicked.addListener((tab) => {
-  openPanelInTab(tab);
+  openFromActionClick(tab).catch((error) => {
+    console.warn("Failed to open WhatsApp Web from action click", error);
+  });
 });

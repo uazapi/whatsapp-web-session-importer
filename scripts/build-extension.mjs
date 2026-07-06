@@ -1,10 +1,22 @@
-import { copyFile, cp, mkdir, readFile, rm } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { build } from "esbuild";
 
 await rm("dist", { recursive: true, force: true });
 await mkdir("dist/vendor", { recursive: true });
 
 const manifest = JSON.parse(await readFile("manifest.json", "utf8"));
+const localBridge = process.argv.includes("--local-bridge") || process.env.EXTENSION_LOCAL_BRIDGE === "1";
+if (localBridge) {
+  for (const script of manifest.content_scripts || []) {
+    if (Array.isArray(script.js) && script.js.includes("app-bridge.js")) {
+      script.matches = Array.from(new Set([
+        ...(script.matches || []),
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ]));
+    }
+  }
+}
 const contentScriptFiles = new Set(
   (manifest.content_scripts || []).flatMap((script) => Array.isArray(script.js) ? script.js : [])
 );
@@ -44,6 +56,6 @@ if (contentScriptFiles.has("app-bridge.js")) {
 
 await Promise.all(builds.map((options) => build(options)));
 
-await copyFile("manifest.json", "dist/manifest.json");
+await writeFile("dist/manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
 await cp("icons", "dist/icons", { recursive: true });
 await copyFile("vendor/wa-store-migrate.bundle.js", "dist/vendor/wa-store-migrate.bundle.js");
