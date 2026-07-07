@@ -48,6 +48,12 @@
         padding: 18px;
       }
 
+      .left-column {
+        display: grid;
+        gap: 18px;
+        align-content: start;
+      }
+
       h1,
       h2 {
         margin: 0 0 14px;
@@ -81,6 +87,28 @@
         font-weight: 800;
         letter-spacing: .04em;
         text-transform: uppercase;
+      }
+
+      .quick-links {
+        display: grid;
+        gap: 10px;
+      }
+
+      .quick-links-title {
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .quick-links .button {
+        width: 100%;
+      }
+
+      .quick-links p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
       }
 
       input[type="text"] {
@@ -478,65 +506,77 @@
   </head>
   <body>
     <main>
-      <section class="panel">
-        <h1>Configuração de teste</h1>
-
-        <section class="config-group">
-          <div class="config-title">Cliente</div>
-          <label>
-            Nome da assinatura
-            <input id="client" type="text" value="minha-loja" autocomplete="off" />
-          </label>
-          <label class="check">
-            <input id="showClientField" type="checkbox" />
-            Mostrar campo client
-          </label>
-          <label class="check">
-            <input id="canEditClient" type="checkbox" />
-            Permitir editar client
-          </label>
+      <div class="left-column">
+        <section class="panel">
+          <h1>Demo técnica</h1>
+          <div class="quick-links">
+            <div class="quick-links-title">Antes de testar</div>
+            <a class="button" href="https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp" target="_blank" rel="noreferrer">Instalar extensão</a>
+            <a class="button secondary" href="./passkey.html">Sobre / passkey</a>
+            <p>Instale a extensão antes de testar. A página “Sobre / passkey” explica o fluxo quando o WhatsApp pede QR Code, pareamento ou confirmação de dispositivo.</p>
+          </div>
         </section>
 
-        <section class="config-group">
-          <div class="config-title">Token</div>
-          <label>
-            Token
-            <input id="token" type="text" value="00000000-0000-4000-8000-000000000000" autocomplete="off" />
-          </label>
-          <label class="check">
-            <input id="showTokenField" type="checkbox" />
-            Mostrar campo token
-          </label>
-          <label class="check">
-            <input id="canEditToken" type="checkbox" />
-            Permitir editar token
-          </label>
-        </section>
+        <section class="panel">
+          <h2>Configuração de teste</h2>
 
-        <section class="config-group">
-          <div class="config-title">Histórico</div>
-          <label class="check">
-            <input id="includeHistory" type="checkbox" checked />
-            Incluir histórico
-          </label>
-          <label class="check">
-            <input id="hideHistoryOption" type="checkbox" checked />
-            Esconder opção de histórico na extensão
-          </label>
-          <label class="check">
-            <input id="lockHistoryOption" type="checkbox" checked />
-            Travar opção de histórico na extensão
-          </label>
-        </section>
+          <section class="config-group">
+            <div class="config-title">Cliente</div>
+            <label>
+              Nome da assinatura
+              <input id="client" type="text" value="minha-loja" autocomplete="off" />
+            </label>
+            <label class="check">
+              <input id="showClientField" type="checkbox" />
+              Mostrar campo client
+            </label>
+            <label class="check">
+              <input id="canEditClient" type="checkbox" />
+              Permitir editar client
+            </label>
+          </section>
 
-        <section class="config-group">
-          <div class="config-title">Painel da extensão</div>
-          <label class="check">
-            <input id="centerPanel" type="checkbox" checked />
-            Abrir painel no centro
-          </label>
+          <section class="config-group">
+            <div class="config-title">Token</div>
+            <label>
+              Token
+              <input id="token" type="text" value="00000000-0000-4000-8000-000000000000" autocomplete="off" />
+            </label>
+            <label class="check">
+              <input id="showTokenField" type="checkbox" />
+              Mostrar campo token
+            </label>
+            <label class="check">
+              <input id="canEditToken" type="checkbox" />
+              Permitir editar token
+            </label>
+          </section>
+
+          <section class="config-group">
+            <div class="config-title">Histórico</div>
+            <label class="check">
+              <input id="includeHistory" type="checkbox" checked />
+              Incluir histórico
+            </label>
+            <label class="check">
+              <input id="hideHistoryOption" type="checkbox" checked />
+              Esconder opção de histórico na extensão
+            </label>
+            <label class="check">
+              <input id="lockHistoryOption" type="checkbox" checked />
+              Travar opção de histórico na extensão
+            </label>
+          </section>
+
+          <section class="config-group">
+            <div class="config-title">Painel da extensão</div>
+            <label class="check">
+              <input id="centerPanel" type="checkbox" checked />
+              Abrir painel no centro
+            </label>
+          </section>
         </section>
-      </section>
+      </div>
 
       <section class="panel">
         <h2>Teste do SDK</h2>
@@ -594,18 +634,6 @@
             </div>
             <div class="code-title">Link aberto</div>
             <code id="whatsappUrlPreview"></code>
-          </article>
-
-          <article class="action-card">
-            <div class="action-head">
-              <div class="action-copy">
-                <strong>Instalar extensão</strong>
-                <span>Abre a Chrome Web Store. Não envia payload e não inicia migração.</span>
-              </div>
-              <a id="installLink" class="button secondary" href="https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp" target="_blank" rel="noreferrer">Instalar extensão</a>
-            </div>
-            <div class="code-title">Link aberto</div>
-            <code id="installUrlPreview"></code>
           </article>
         </div>
 
@@ -742,7 +770,6 @@
         ].join("\n");
         document.getElementById("connectorUrlPreview").textContent = connectorUrl;
         document.getElementById("whatsappUrlPreview").textContent = whatsappUrl;
-        document.getElementById("installUrlPreview").textContent = INSTALL_URL;
       }
 
       function renderPreview(config) {
