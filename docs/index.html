@@ -40,7 +40,7 @@
       .links {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
         margin-top: 4px;
       }
 
@@ -57,6 +57,27 @@
         text-decoration: none;
       }
 
+      .button:hover {
+        background: #2fd979;
+      }
+
+      .button.secondary {
+        border: 1px solid #303833;
+        background: #1b1f1d;
+        color: #f2f5f3;
+      }
+
+      .button.secondary:hover {
+        border-color: #3e4a43;
+        background: #222823;
+        color: #ffffff;
+      }
+
+      .button:focus-visible {
+        outline: 2px solid rgba(37, 196, 106, .45);
+        outline-offset: 2px;
+      }
+
       code {
         color: #dbe6df;
         overflow-wrap: anywhere;
@@ -69,7 +90,8 @@
       <p>Arquivos estáticos para integração com a extensão.</p>
       <div class="links">
         <a class="button" href="./import/?client=minha-loja&token=00000000-0000-4000-8000-000000000000">Testar link único</a>
-        <a href="./demo.html">Abrir demo técnica</a>
+        <a class="button secondary" href="./demo.html">Abrir demo técnica</a>
+        <a class="button secondary" href="./passkey.html">Sobre</a>
       </div>
       <p>
         Método simples via link único:
