@@ -107,17 +107,14 @@ Se a conta já estava conectada no WhatsApp Web, mas o painel ainda pede para en
 3. clique novamente no botão do SaaS ou no link único;
 4. se necessário, clique no ícone da extensão.
 
-## O que evitar
+## Boas práticas
 
-Evite criar um fluxo em que o cliente final precise:
+Para manter o atendimento simples:
 
-- copiar challenge manualmente;
-- colar dados técnicos de sessão;
-- abrir DevTools;
-- baixar arquivo de sessão;
-- passar token por chat público;
-- usar computador público ou compartilhado;
-- tentar migrar antes do WhatsApp Web terminar de carregar.
+- use o link gerado pelo painel ou pela equipe de suporte;
+- conclua o login no WhatsApp Web antes de confirmar a migração;
+- aguarde as conversas aparecerem antes de clicar em **Migrar sessão**;
+- compartilhe o link apenas com a pessoa autorizada a conectar a instância.
 
 ## Limites conhecidos
 
