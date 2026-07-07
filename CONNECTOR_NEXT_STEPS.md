@@ -163,7 +163,7 @@ Na v1.1, `sdk.js` pode ser suficiente. Antes de muitos parceiros usarem, criar p
 Manifest atual permite:
 
 ```json
-"matches": ["https://*.seudominio.com/*"]
+"matches": ["https://*.uazapi.com/*"]
 ```
 
 Isso funciona para testes e subdominios permitidos.

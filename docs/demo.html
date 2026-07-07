@@ -33,10 +33,10 @@
       }
 
       main {
-        width: min(1180px, 100%);
+        width: min(1500px, 100%);
         margin: 0 auto;
         display: grid;
-        grid-template-columns: minmax(280px, 360px) minmax(320px, 1fr);
+        grid-template-columns: minmax(280px, 360px) minmax(360px, 1fr) 492px;
         gap: 18px;
         align-items: start;
       }
@@ -228,6 +228,238 @@
         margin-top: 0;
       }
 
+      .preview-panel {
+        position: sticky;
+        top: 24px;
+      }
+
+      .preview-stage {
+        min-height: 590px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(rgba(5, 10, 13, .72), rgba(5, 10, 13, .72)),
+          repeating-linear-gradient(0deg, rgba(255, 255, 255, .04) 0 1px, transparent 1px 74px),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 92px),
+          #0b141a;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .preview-stage[data-layout="center"] {
+        display: grid;
+        place-items: center;
+        padding: 18px;
+      }
+
+      .preview-stage[data-layout="corner"] .extension-preview {
+        position: absolute;
+        right: 18px;
+        top: 18px;
+      }
+
+      .extension-preview {
+        width: 368px;
+        border: 1px solid rgba(37, 196, 106, .28);
+        border-radius: 8px;
+        background: #1d1f1f;
+        color: #fafafa;
+        box-shadow: 0 18px 46px rgba(0, 0, 0, .5), 0 0 30px rgba(33, 192, 99, .2);
+        overflow: hidden;
+      }
+
+      .preview-stage[data-layout="center"] .extension-preview {
+        width: 420px;
+      }
+
+      .preview-topbar {
+        min-height: 68px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+      }
+
+      .preview-brand {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 36px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+      }
+
+      .preview-mark {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #0a0a0a;
+        font-weight: 800;
+      }
+
+      .preview-title {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 800;
+      }
+
+      .preview-subtitle {
+        display: block;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+      }
+
+      .preview-account-value {
+        color: rgba(255, 255, 255, .82);
+        font-weight: 600;
+      }
+
+      .preview-close {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: rgba(255, 255, 255, .62);
+        font: inherit;
+        font-size: 18px;
+      }
+
+      .preview-form {
+        display: grid;
+        gap: 14px;
+        padding: 16px 18px 18px;
+      }
+
+      .preview-field {
+        display: grid;
+        gap: 6px;
+        color: #fafafa;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .preview-input {
+        min-height: 40px;
+        border-radius: 8px;
+        background: #242626;
+        color: rgba(255, 255, 255, .62);
+        padding: 10px 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .preview-input[data-locked="true"] {
+        color: rgba(255, 255, 255, .42);
+      }
+
+      .preview-check {
+        display: grid;
+        grid-template-columns: 16px minmax(0, 1fr);
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .preview-check[data-locked="true"] {
+        color: rgba(255, 255, 255, .42);
+      }
+
+      .preview-box {
+        width: 16px;
+        height: 16px;
+        border: 1px solid transparent;
+        border-radius: 3px;
+        background: var(--primary);
+        position: relative;
+      }
+
+      .preview-check[data-locked="true"][data-checked="true"] .preview-box {
+        background: rgba(255, 255, 255, .38);
+      }
+
+      .preview-check[data-checked="false"] .preview-box {
+        background: transparent;
+        border-color: rgba(255, 255, 255, .36);
+      }
+
+      .preview-box::after {
+        content: "";
+        width: 5px;
+        height: 8px;
+        border-bottom: 2px solid #0a0a0a;
+        border-right: 2px solid #0a0a0a;
+        position: absolute;
+        left: 5px;
+        top: 2px;
+        transform: rotate(45deg);
+      }
+
+      .preview-check[data-checked="false"] .preview-box::after {
+        display: none;
+      }
+
+      .preview-button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 6px;
+        background: var(--primary);
+        color: #0a0a0a;
+        font: inherit;
+        font-weight: 800;
+      }
+
+      .preview-notice {
+        padding: 9px 11px;
+        border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 8px;
+        background: #161717;
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .preview-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 18px 10px;
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        color: rgba(255, 255, 255, .62);
+        font-size: 12px;
+      }
+
+      [data-preview-hidden="true"] {
+        display: none !important;
+      }
+
+      @media (max-width: 1180px) {
+        main {
+          grid-template-columns: minmax(280px, 360px) minmax(320px, 1fr);
+        }
+
+        .preview-panel {
+          grid-column: 1 / -1;
+          position: static;
+        }
+
+        .preview-stage {
+          min-height: 520px;
+        }
+      }
+
       @media (max-width: 860px) {
         main {
           grid-template-columns: 1fr;
@@ -247,21 +479,21 @@
   <body>
     <main>
       <section class="panel">
-        <h1>Config teste</h1>
+        <h1>Configuração de teste</h1>
 
         <section class="config-group">
-          <div class="config-title">Historico</div>
-          <label class="check">
-            <input id="includeHistory" type="checkbox" checked />
-            Incluir historico
+          <div class="config-title">Cliente</div>
+          <label>
+            Nome da assinatura
+            <input id="client" type="text" value="minha-loja" autocomplete="off" />
           </label>
           <label class="check">
-            <input id="hideHistoryOption" type="checkbox" checked />
-            Esconder opcao de historico na extensao
+            <input id="showClientField" type="checkbox" />
+            Mostrar campo client
           </label>
           <label class="check">
-            <input id="lockHistoryOption" type="checkbox" checked />
-            Travar opcao de historico na extensao
+            <input id="canEditClient" type="checkbox" />
+            Permitir editar client
           </label>
         </section>
 
@@ -282,23 +514,23 @@
         </section>
 
         <section class="config-group">
-          <div class="config-title">Cliente</div>
-          <label>
-            Nome da assinatura
-            <input id="client" type="text" value="minha-loja" autocomplete="off" />
+          <div class="config-title">Histórico</div>
+          <label class="check">
+            <input id="includeHistory" type="checkbox" checked />
+            Incluir histórico
           </label>
           <label class="check">
-            <input id="showClientField" type="checkbox" />
-            Mostrar campo client
+            <input id="hideHistoryOption" type="checkbox" checked />
+            Esconder opção de histórico na extensão
           </label>
           <label class="check">
-            <input id="canEditClient" type="checkbox" />
-            Permitir editar client
+            <input id="lockHistoryOption" type="checkbox" checked />
+            Travar opção de histórico na extensão
           </label>
         </section>
 
         <section class="config-group">
-          <div class="config-title">Painel da extensao</div>
+          <div class="config-title">Painel da extensão</div>
           <label class="check">
             <input id="centerPanel" type="checkbox" checked />
             Abrir painel no centro
@@ -310,19 +542,19 @@
         <h2>Teste do SDK</h2>
         <div id="statusCard" class="status-card" data-state="idle">
           <strong id="statusTitle">Aguardando teste</strong>
-          <span id="statusDetail">Use os botoes abaixo para verificar a extensao ou abrir o WhatsApp Web.</span>
+          <span id="statusDetail">Use os botões abaixo para verificar a extensão ou abrir o WhatsApp Web.</span>
         </div>
 
         <div class="action-list">
           <article class="action-card">
             <div class="action-head">
               <div class="action-copy">
-                <strong>Verificar extensao</strong>
-                <span>Confirma se a extensao esta instalada e respondendo pelo bridge. Nao abre WhatsApp e nao envia token.</span>
+                <strong>Verificar extensão</strong>
+                <span>Confirma se a extensão está instalada e respondendo pelo bridge. Não abre WhatsApp e não envia token.</span>
               </div>
-              <button id="checkButton" type="button">Verificar extensao</button>
+              <button id="checkButton" type="button">Verificar extensão</button>
             </div>
-            <div class="code-title">Codigo executado</div>
+            <div class="code-title">Código executado</div>
             <code id="checkCodePreview"></code>
           </article>
 
@@ -330,23 +562,23 @@
             <div class="action-head">
               <div class="action-copy">
                 <strong>Abrir WhatsApp</strong>
-                <span>Envia o payload abaixo para a extensao. Com os defaults, basta client e token; o SDK aplica as demais opcoes.</span>
+                <span>Envia o payload abaixo para a extensão. Com os defaults, basta client e token; o SDK aplica as demais opções.</span>
               </div>
               <button id="openButton" type="button">Abrir WhatsApp</button>
             </div>
             <div class="code-title">Payload enviado</div>
             <code id="payloadPreview"></code>
-            <div class="code-title">Codigo executado</div>
+            <div class="code-title">Código executado</div>
             <code id="openCodePreview"></code>
           </article>
 
           <article class="action-card">
             <div class="action-head">
               <div class="action-copy">
-                <strong>Metodo simples via link unico</strong>
-                <span>Abre a pagina intermediaria `/import/`, que verifica a extensao. Com os defaults, a URL leva apenas client e token.</span>
+                <strong>Método simples via link único</strong>
+                <span>Abre a página intermediária `/import/`, que verifica a extensão. Com os defaults, a URL leva apenas client e token.</span>
               </div>
-              <a id="importLink" class="button secondary" href="#">Abrir pagina /import</a>
+              <a id="importLink" class="button secondary" href="#">Abrir página /import</a>
             </div>
             <div class="code-title">Link aberto</div>
             <code id="connectorUrlPreview"></code>
@@ -356,7 +588,7 @@
             <div class="action-head">
               <div class="action-copy">
                 <strong>Link direto para WhatsApp Web</strong>
-                <span>Abre o WhatsApp Web com os parametros no hash. Opcoes so entram no link quando fogem do default.</span>
+                <span>Abre o WhatsApp Web com os parâmetros no hash. Opções só entram no link quando fogem do default.</span>
               </div>
               <a id="whatsappLink" class="button secondary" href="#">Abrir link direto</a>
             </div>
@@ -367,10 +599,10 @@
           <article class="action-card">
             <div class="action-head">
               <div class="action-copy">
-                <strong>Instalar extensao</strong>
-                <span>Abre a Chrome Web Store. Nao envia payload e nao inicia migracao.</span>
+                <strong>Instalar extensão</strong>
+                <span>Abre a Chrome Web Store. Não envia payload e não inicia migração.</span>
               </div>
-              <a id="installLink" class="button secondary" href="https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp" target="_blank" rel="noreferrer">Instalar extensao</a>
+              <a id="installLink" class="button secondary" href="https://chromewebstore.google.com/detail/cdjfbjfolpeenlmanmkoglhhcjfgcbpp" target="_blank" rel="noreferrer">Instalar extensão</a>
             </div>
             <div class="code-title">Link aberto</div>
             <code id="installUrlPreview"></code>
@@ -379,6 +611,44 @@
 
         <div class="code-title">Eventos recebidos</div>
         <code id="eventsPreview">Nenhum evento ainda.</code>
+      </section>
+
+      <section class="panel preview-panel">
+        <h2>Preview do painel</h2>
+        <div id="previewStage" class="preview-stage" data-layout="center">
+          <div class="extension-preview">
+            <div class="preview-topbar">
+              <div class="preview-brand">
+                <div class="preview-mark">WA</div>
+                <div>
+                  <span class="preview-title">Migrar sessão</span>
+                  <span class="preview-subtitle">Conta: <span class="preview-account-value">+55 11 99999-9999</span></span>
+                </div>
+              </div>
+              <button class="preview-close" type="button" aria-label="Fechar">x</button>
+            </div>
+            <div class="preview-form">
+              <div id="previewClientField" class="preview-field">
+                Nome da assinatura
+                <div id="previewClientInput" class="preview-input">minha-loja</div>
+              </div>
+              <div id="previewTokenField" class="preview-field">
+                Token
+                <div id="previewTokenInput" class="preview-input">00000000-0000-4000-8000-000000000000</div>
+              </div>
+              <div id="previewHistoryOption" class="preview-check">
+                <span class="preview-box"></span>
+                <span>Incluir histórico de mensagens (beta)</span>
+              </div>
+              <button class="preview-button" type="button">Migrar sessão</button>
+              <div class="preview-notice"><strong>Atenção:</strong> esta sessão será migrada para a assinatura informada e desconectada deste navegador.</div>
+            </div>
+            <div class="preview-meta">
+              <span id="previewLayoutLabel">Painel central</span>
+              <span>Versão v0.2.3</span>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -456,7 +726,7 @@
           "const status = await SessionTransfer.ping({ timeoutMs: 2200 });",
           "",
           "if (!status.installed) {",
-          "  // mostrar botao de instalacao",
+          "  // mostrar botão de instalação",
           "}"
         ].join("\n");
         document.getElementById("openCodePreview").textContent = [
@@ -475,6 +745,20 @@
         document.getElementById("installUrlPreview").textContent = INSTALL_URL;
       }
 
+      function renderPreview(config) {
+        document.getElementById("previewStage").dataset.layout = config.panelLayout;
+        document.getElementById("previewClientField").dataset.previewHidden = String(!config.showClientField);
+        document.getElementById("previewTokenField").dataset.previewHidden = String(!config.showTokenField);
+        document.getElementById("previewHistoryOption").dataset.previewHidden = String(config.hideHistoryOption);
+        document.getElementById("previewHistoryOption").dataset.locked = String(config.lockHistoryOption);
+        document.getElementById("previewHistoryOption").dataset.checked = String(config.includeHistory);
+        document.getElementById("previewClientInput").dataset.locked = String(!config.canEditClient);
+        document.getElementById("previewTokenInput").dataset.locked = String(!config.canEditToken);
+        document.getElementById("previewClientInput").textContent = config.client || "minha-loja";
+        document.getElementById("previewTokenInput").textContent = config.token || "token";
+        document.getElementById("previewLayoutLabel").textContent = config.panelLayout === "center" ? "Painel central" : "Painel no canto";
+      }
+
       function render() {
         var config = values();
         var payload = payloadForAction(config);
@@ -485,6 +769,7 @@
         document.getElementById("payloadPreview").textContent = JSON.stringify(payload, null, 2);
         document.getElementById("importLink").href = connectorUrl;
         document.getElementById("whatsappLink").href = whatsappUrl;
+        renderPreview(config);
         renderCode(config, connectorUrl, whatsappUrl);
       }
 
@@ -502,24 +787,24 @@
 
       async function checkExtension() {
         if (!window.SessionTransfer) {
-          setStatus("error", "SDK nao carregou", "Verifique se /sdk.js esta disponivel.");
+          setStatus("error", "SDK não carregou", "Verifique se /sdk.js está disponível.");
           return;
         }
-        setStatus("checking", "Verificando extensao", "Aguardando resposta do bridge.");
+        setStatus("checking", "Verificando extensão", "Aguardando resposta do bridge.");
         var result = await SessionTransfer.ping({ timeoutMs: 2200 });
         if (result.installed) {
-          setStatus("ready", "Extensao instalada", result.version ? "Versao " + result.version : "Versao nao informada.");
+          setStatus("ready", "Extensão instalada", result.version ? "Versão " + result.version : "Versão não informada.");
         } else {
-          setStatus("missing", "Extensao nao instalada", "Use o botao de instalacao ou teste o link direto depois de instalar.");
+          setStatus("missing", "Extensão não instalada", "Use o botão de instalação ou teste o link direto depois de instalar.");
         }
       }
 
       async function openWhatsApp() {
         if (!window.SessionTransfer) {
-          setStatus("error", "SDK nao carregou", "Verifique se /sdk.js esta disponivel.");
+          setStatus("error", "SDK não carregou", "Verifique se /sdk.js está disponível.");
           return;
         }
-        setStatus("checking", "Abrindo WhatsApp", "Enviando comando para a extensao.");
+        setStatus("checking", "Abrindo WhatsApp", "Enviando comando para a extensão.");
         try {
           var result = await SessionTransfer.open(payloadForAction(values()));
           if (result && result.ok) {
@@ -527,12 +812,12 @@
             return;
           }
           if (result && result.installed === false) {
-            setStatus("missing", "Extensao nao instalada", "Instale a extensao ou use a pagina /import.");
+            setStatus("missing", "Extensão não instalada", "Instale a extensão ou use a página /import.");
             return;
           }
-          setStatus("error", "Nao foi possivel abrir", (result && result.error) || "Resposta inesperada.");
+          setStatus("error", "Não foi possível abrir", (result && result.error) || "Resposta inesperada.");
         } catch (error) {
-          setStatus("error", "Nao foi possivel abrir", error && error.message ? error.message : String(error));
+          setStatus("error", "Não foi possível abrir", error && error.message ? error.message : String(error));
         }
       }
 

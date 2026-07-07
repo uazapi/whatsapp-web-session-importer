@@ -103,13 +103,13 @@ https://web.whatsapp.com/#client=minhaempresa&token=550e8400-e29b-41d4-a716-4466
 Forma completa:
 
 ```text
-https://web.whatsapp.com/#client=https://minhaempresa.seudominio.com&token=550e8400-e29b-41d4-a716-446655440000
+https://web.whatsapp.com/#client=https://minhaempresa.uazapi.com&token=550e8400-e29b-41d4-a716-446655440000
 ```
 
 Nesse exemplo, `minhaempresa` vira:
 
 ```text
-https://minhaempresa.seudominio.com
+https://minhaempresa.uazapi.com
 ```
 
 Não altere letras, números ou símbolos do token.

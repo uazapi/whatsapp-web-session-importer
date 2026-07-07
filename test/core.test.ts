@@ -48,7 +48,7 @@ function installWhatsAppPageStub({ loggedInShell = false, qrElement = false, tex
 
 describe("URL helpers", () => {
   it("normalizes subscription slugs, hosts, and full HTTPS URLs", () => {
-    expect(normalizeBaseUrl("minha-loja")).toBe("https://minha-loja.seudominio.com");
+    expect(normalizeBaseUrl("minha-loja")).toBe("https://minha-loja.uazapi.com");
     expect(normalizeBaseUrl("api.example.com")).toBe("https://api.example.com");
     expect(normalizeBaseUrl("https://api.example.com/")).toBe("https://api.example.com");
   });

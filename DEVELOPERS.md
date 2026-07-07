@@ -77,7 +77,7 @@ Ele pode receber um nome curto, um host ou uma URL completa.
 Exemplos:
 
 ```text
-minhaempresa       -> https://minhaempresa.seudominio.com
+minhaempresa       -> https://minhaempresa.uazapi.com
 api.exemplo.com    -> https://api.exemplo.com
 https://xpto.com   -> https://xpto.com
 ```
@@ -88,12 +88,12 @@ O pacote de producao rejeita `http://`, `localhost` e `127.*`. Para testes
 locais, use um fork/build de desenvolvimento e adicione explicitamente os hosts
 locais no manifesto e em `appBridge.matches`.
 
-Para mudar o domínio padrão `seudominio.com`, altere:
+Para mudar o domínio padrão `uazapi.com`, altere:
 
 ```ts
 // src/customization.ts
 api: {
-  clientBaseDomain: "seudominio.com"
+  clientBaseDomain: "uazapi.com"
 }
 ```
 
@@ -464,7 +464,7 @@ Esse fallback deve continuar existindo mesmo quando a bridge é usada, porque co
 
 ### Opção 3: bridge em domínio próprio
 
-Se o SaaS do cliente não roda em `*.seudominio.com`, a bridge só funciona se o domínio for explicitamente permitido.
+Se o SaaS do cliente não roda em `*.uazapi.com`, a bridge só funciona se o domínio for explicitamente permitido.
 
 Atualize:
 
@@ -485,7 +485,7 @@ Ela roda apenas nos hosts permitidos pelo manifest.
 Hoje os hosts são:
 
 ```text
-https://*.seudominio.com/*
+https://*.uazapi.com/*
 ```
 
 Se mudar `appBridge.matches` em `src/customization.ts`, atualize também `manifest.json` em:
@@ -519,7 +519,7 @@ Se o SaaS não receber resposta, ele não consegue saber o motivo exato. Pode se
 Resumo prático:
 
 ```text
-SaaS em *.seudominio.com -> pode detectar com PING.
+SaaS em *.uazapi.com -> pode detectar com PING.
 SaaS em localhost/127.0.0.1 -> precisa de um build de desenvolvimento com esses hosts adicionados.
 SaaS em domínio próprio -> precisa adicionar o domínio no manifest/config da extensão antes de publicar/forkar.
 Sem bridge/extensão cooperando -> não existe detecção confiável.

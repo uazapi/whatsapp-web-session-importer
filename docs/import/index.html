@@ -138,12 +138,12 @@
   <body>
     <main id="panel" data-state="checking">
       <div class="mark">WA</div>
-      <h1 id="title">Preparando conexao</h1>
-      <p id="message">Verificando se a extensao esta instalada.</p>
+      <h1 id="title">Preparando conexão</h1>
+      <p id="message">Verificando se a extensão está instalada.</p>
       <p id="detail" class="detail">Aguarde um instante.</p>
       <div class="actions">
         <button id="retryButton" type="button" hidden>Tentar novamente</button>
-        <a id="installLink" class="primary" hidden>Instalar extensao</a>
+        <a id="installLink" class="primary" hidden>Instalar extensão</a>
         <a id="manualLink" class="secondary" href="https://web.whatsapp.com/" hidden>Abrir WhatsApp</a>
       </div>
     </main>
@@ -303,9 +303,9 @@
         function showInstall() {
           setState(
             "missing",
-            "Instale a extensao",
-            "Voce sera redirecionado para instalar o conector.",
-            "Depois da instalacao, abra este mesmo link novamente."
+            "Instale a extensão",
+            "Você será redirecionado para instalar o conector.",
+            "Depois da instalação, abra este mesmo link novamente."
           );
           installLink.hidden = false;
           manualLink.hidden = true;
@@ -328,7 +328,7 @@
           if (!payload.client || !payload.token) {
             setState(
               "invalid",
-              "Link invalido",
+              "Link inválido",
               "Este link precisa receber client e token.",
               "Exemplo: /import/?client=minha-loja&token=00000000-0000-4000-8000-000000000000"
             );
@@ -341,18 +341,18 @@
           }
 
           try {
-            setState("checking", "Preparando conexao", "Verificando se a extensao esta instalada.", "Aguarde um instante.");
+            setState("checking", "Preparando conexão", "Verificando se a extensão está instalada.", "Aguarde um instante.");
             var status = await window.SessionTransfer.ping({ timeoutMs: 2200 });
             if (!status.installed) {
               showInstall();
               return;
             }
 
-            setState("opening", "Abrindo WhatsApp Web", "A extensao foi encontrada.", "Confirme a migracao no painel que sera aberto.");
+            setState("opening", "Abrindo WhatsApp Web", "A extensão foi encontrada.", "Confirme a migração no painel que será aberto.");
             var result = await window.SessionTransfer.open(payload);
 
             if (result && result.ok) {
-              setState("opened", "WhatsApp Web aberto", "Confirme a migracao no painel do WhatsApp Web.", "Se nada abriu, use o botao abaixo.");
+              setState("opened", "WhatsApp Web aberto", "Confirme a migração no painel do WhatsApp Web.", "Se nada abriu, use o botão abaixo.");
               manualLink.hidden = false;
               return;
             }
@@ -364,16 +364,16 @@
 
             setState(
               "error",
-              "Nao foi possivel abrir",
-              "A extensao respondeu, mas nao concluiu a abertura do WhatsApp Web.",
+              "Não foi possível abrir",
+              "A extensão respondeu, mas não concluiu a abertura do WhatsApp Web.",
               (result && result.error) || "Tente novamente em alguns segundos."
             );
             retryButton.hidden = false;
           } catch (error) {
             setState(
               "error",
-              "Nao foi possivel abrir",
-              "Falha ao comunicar com a extensao.",
+              "Não foi possível abrir",
+              "Falha ao comunicar com a extensão.",
               error && error.message ? error.message : "Tente novamente em alguns segundos."
             );
             retryButton.hidden = false;
